@@ -32,7 +32,7 @@ space, and Machine Learning (ML) models connecting parameter space and
 phenotypic space. ML models can be considered as phenomenological
 solutions of dynamical models, trained by a data-driven way.
 
-<img src="man/figures/ppm.png" width="500" />
+<img src="man/figures/PPM.png" width="500" />
 
 #### Parameter space
 
@@ -93,7 +93,7 @@ generated and capital letter combinations (e.g., 042015\_AAACEZGP).
 Once MAPPA is launched, A Shiny App will begin and show overall
 conceptual schematics of MAPPA.
 
-<img src="man/figures/initial.png" width="500" />
+<img src="man/figures/Initial.png" width="500" />
 
 #### Overall structure of the app
 
