@@ -1,34 +1,17 @@
 
 options(shiny.maxRequestSize=10000*1024^2)
 
-#load("~/Dropbox/Codes/project_sim_ml/analysis/Figures/two_gene.RData")
-#load("~/Dropbox/Codes/project_sim_ml/packaging/two_gene_PPM.RData")
+
 
 ggdata = data.frame() ## how to make this local? to be able to load data by user input
-#load("~/Dropbox/Codes/project_sim_ml/analysis/visualization/rf.two.gene.combined.bc.rda")
-#source("classes.R")
 
 server <- function(input, output, session) {
 
-  pwd <- getwd()
-  setwd(pwd)
-  #####################################
-  ############## Overview #############
-  #####################################
-  # observe({
-  #   if(input$side_menu_tab == "exp_phase_tab"){
-  #     load("~/Dropbox/Codes/project_sim_ml/analysis/Figures/two_gene.RData")
-  #     load("~/Dropbox/Codes/project_sim_ml/analysis/visualization/rf.two.gene.combined.bc.rda")
-  #   }
-  # })
-  #
 
   #####################################
   ######### Workspace##################
   #####################################
-  #setwd("~/Dropbox/Codes/project_sim_ml/packaging/proto_app_OOBenv/PPM/")
-  #setwd("~/Dropbox/Codes/project_tcell_activation/modeling/MAPPA_ntr0_ext_model_04052019/analysis/MAPPA/")
-  #setwd("~/Dropbox/Codes/project_atphg_vs_apop/model_tyson/mappa/")
+
   PPM <- reactiveValues()
 
   ##create a new PPM
@@ -36,15 +19,7 @@ server <- function(input, output, session) {
    PPM$object <- new(Class = "PPM", input$PPM_name)
   })
 
-  ##load from a file
-  # observe({
-  #   if(!is.null(input$file_PPM)){
-  #     PPM$object <- readRDS(input$file_PPM$datapath)
-  #
-  #   }
-  # })
 
-  #shinyFileChoose(input,'file_PPM', session=session,roots=c(wd='.'))
   shinyFileChoose(input,'file_PPM', session=session,roots= c("root"= "~/", "cwd" = getwd()), defaultRoot = 'root')
 
   observeEvent(input$file_PPM, {

@@ -12,6 +12,7 @@ demonstrating a part of MAPPA for interactive figures
 1.  [How to install and run](#how_to_install_and_run)
 2.  [Key concepts for using MAPPA](#key_concepts_for_using_MAPPA)
 3.  [Overall structure of the app](#Overall_structure)
+4.  [Quick tutorial](#Quick_tutorial)
 
 ## How to install and run <a name="how_to_install_and_run"></a>
 
@@ -125,7 +126,7 @@ pages.
     
     <img src="man/figures/Exp_PPM_2.png" width="700" />
 
-### PPM object
+### PPM object <a name="Quick_tutorial"></a>
 
 ## Quick tutorial
 

@@ -48,7 +48,7 @@ ui <- dashboardPage(
                 column(3,h4("Create a new PPM."),
                        textInput("PPM_name", "PPM name."),
                        actionButton("new_PPM","Create!")),
-                column(4, h4("Open an existing PPM."),
+                column(3, h4("Open an existing PPM."),
 
                        shinyFilesButton("file_PPM",
                                            "Browse...","Please select a PPM.",
