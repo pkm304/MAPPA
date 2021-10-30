@@ -9,7 +9,7 @@ ggdata = data.frame() ## how to make this local? to be able to load data by user
 #source("classes.R")
 
 server <- function(input, output, session) {
-  
+
   pwd <- getwd()
   setwd(pwd)
   #####################################
@@ -169,12 +169,15 @@ server <- function(input, output, session) {
   output$list_ML.models <- renderUI({
     ml.models.names <- NULL
     if(!is.null(PPM$object)){
+      if(length(PPM$object@ml.models) != 0 ){
       if(!is.null(get.ml.models.name(PPM$object))){
         ml.models.names <- get.ml.models.name(PPM$object)
         ml.models.names <- unlist(ml.models.names)
         names(ml.models.names) <- NULL
-      }
-    }else{}
+      }}
+    }else{
+      ml.models.names <- NULL
+    }
     isolate({
       list(
         selectInput("show_ml.model_ml",label = h4("ML models"),choices =   ml.models.names, size = 3,multiple = FALSE, selectize = FALSE)
@@ -1266,10 +1269,11 @@ server <- function(input, output, session) {
   output$list_ml.models_ml_tab_ui<- renderUI({
     ml.models.names <- NULL
     if(!is.null(PPM$object)){
+      if(length(PPM$object@ml.models) != 0){
       ml.models.names <- get.ml.models.name(PPM$object)
       ml.models.names <- unlist(ml.models.names)
-      names(ml.models.names) <- NULL
-    }else{}
+      names(ml.models.names) <- NULL}
+    }else{ml.models.names <- NULL}
     isolate({
       list(
         selectInput("load_ml.model_ml",label = h4("ML models in PPM"),choices =   ml.models.names, size = 3,multiple = FALSE, selectize = FALSE)

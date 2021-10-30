@@ -11,6 +11,7 @@ demonstrating a part of MAPPA for interactive figures
 
 1.  [How to install and run](#how_to_install_and_run)
 2.  [Key concepts for using MAPPA](#key_concepts_for_using_MAPPA)
+3.  [How to use](#How_to_use)
 
 ## How to install and run <a name="how_to_install_and_run"></a>
 
@@ -22,16 +23,18 @@ devtools::install_github("pkm304/MAPPA")
 launch_MAPPA()
 ```
 
-## Key concepts for using MAPPA
+## Key concepts for using MAPPA <a name="key_concepts_for_using_MAPPA"></a>
 
-1)  PPM (Parameter-Phenotype Map)
+#### PPM (Parameter-Phenotype Map)
 
 A Parameter-Phenotype Map (PPM) consists of parameter space, phenotypic
 space, and Machine Learning (ML) models connecting parameter space and
 phenotypic space. ML models can be considered as phenomenological
 solutions of dynamical models, trained by a data-driven way.
 
-2)  Parameter space
+<img src='man/figures/ppm.png' width="500" />
+
+#### Parameter space
 
 A parameter space consists of kinetic parameters of dynamical models and
 their feasible ranges. As dynamical models become realistic, the
@@ -41,7 +44,7 @@ space. To intuitively visualize high-dimensional space, we apply
 t-distributed Stochastic Neighbor Embedding (t-SNE) for the sampled
 parameter combinations to plot in 2D.
 
-3)  Phenotypic space
+#### Phenotypic space
 
 A phenotypic space consists of a single or multiple phenotype(s). Each
 phenotype is quantitative or categorical values defining a certain
@@ -49,7 +52,7 @@ aspect of simulation outcomes throughout the parameter space of a
 dynamical model, such as single cell gene-gene expression correlations
 or quality factor for oscillation as in the main paper.
 
-4)  Machine Learning (ML) model
+#### Machine Learning (ML) model
 
 A ML model is a random forest regression/classification model. Parameter
 combinations and phenotypes are input data and output data, respectively
@@ -63,7 +66,7 @@ for given parameter combinations, ML models can also output variable
 importance in global and local levels, which leads us to better
 understand behaviors of dynamical models.
 
-5)  Variable Importance
+#### Variable Importance
 
 The random forest algorithm implemented as the randomForest package in R
 generates variable importance both in the global level averaged for all
@@ -78,9 +81,20 @@ other, and the local variable importance (LVI) does capture this aspect.
 We can cluster the patterns of LVIs with the hierarchical clustering
 method and visualize them along with t-SNE plots.
 
-6)  Parameter key
+#### Parameter key
 
 Each parameter combination is assigned its own parameter key to make it
 easily distinguishable and accessible. The basic syntax of parameter
 keys in this paper is to assign the date when parameter combinations are
 generated and capital letter combinations (e.g., 042015\_AAACEZGP).
+
+## How to use<a name = "How_to_use"></a>
+
+Once MAPPA is launched, A Shiny App will begin and show overall
+conceptual schematics of MAPPA.
+
+<img src='man/figures/initial.png' width="500" />
+
+#### Overall structure of the app
+
+There are 5
