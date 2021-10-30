@@ -127,4 +127,26 @@ pages.
 
 ### PPM object
 
-### Quick tutorial
+## Quick tutorial
+
+### Overall workflow
+
+1.  Define a dynamical model and determine parameters to be varied with
+    their associated plausible ranges.
+
+2.  Sample initial parameter combinations uniformly across parameter
+    space defined by the plausible prameter space. Addition sampling can
+    be performed adpatively focusing on certain region of interest later
+    on.
+
+3.  (Not part of MAPPA) Run simulations for sampled parameter
+    combinations and obtain phenotypes of interest out of the simulation
+    results.
+
+4.  Train machine learning models mapping parameter space to phenotypes
+    obtained from simulations, there by constructing PPMs (parameter
+    space + phenotypic space + machine learning models).
+
+5.  Explore PPMs using various visualization methods.
+
+### Example
