@@ -64,8 +64,39 @@ Once MAPPA is launched, A Shiny App will begin and show overall conceptual schem
 <img src="man/figures/Initial.png" width="500" />
 
 
-#### Overall structure of the app 
+### Overall structure of the app 
 
-There are 5
+There are 4 main pages that can be selected at the sidebar. Empty default pages are shown below.
+
+- Workspace
+
+	<img src="man/figures/Workspace.png" width="700" />
+
+- Parameter combination sampling
+
+	- Initial sampling
+	
+	<img src="man/figures/Init_sampling.png" width="700" />
+
+	- Additional sampling
+	
+	<img src="man/figures/Add_sampling.png" width="700" />
+
+* ML model training
+	
+	<img src="man/figures/ML_train.png" width="700" />
+
+* Explor PPM
+
+	<img src="man/figures/Exp_PPM.png" width="700" />
+	
+	omitted
+	
+	<img src="man/figures/Exp_PPM_2.png" width="700" />
+
+
+
+### Quick tutorial
+
 
 
