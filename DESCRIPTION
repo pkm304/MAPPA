@@ -1,6 +1,6 @@
 Package: MAPPA
 Type: Package
-Title: MAchine learning of Parameter-Phenotype mapping for Analyzing dynmical biological systems models
+Title: MAchine learning of Parameter-Phenotype mapping for Analyzing dynamical biological systems models
 Version: 0.0.1
 Author: Kyemyung Park
 Maintainer: Kyemyung Park <pkm304@gmail.com>
