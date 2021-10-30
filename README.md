@@ -11,7 +11,7 @@ demonstrating a part of MAPPA for interactive figures
 
 1.  [How to install and run](#how_to_install_and_run)
 2.  [Key concepts for using MAPPA](#key_concepts_for_using_MAPPA)
-3.  [How to use](#How_to_use)
+3.  [Overall structure of the app](#Overall_structure)
 
 ## How to install and run <a name="how_to_install_and_run"></a>
 
@@ -88,17 +88,16 @@ easily distinguishable and accessible. The basic syntax of parameter
 keys in this paper is to assign the date when parameter combinations are
 generated and capital letter combinations (e.g., 042015\_AAACEZGP).
 
-## How to use<a name = "How_to_use"></a>
+## Overall structure of the app <a name = "Overall_structure"></a>
 
-Once MAPPA is launched, A Shiny App will begin and show overall
-conceptual schematics of MAPPA.
+### Graphical user interface
 
-<img src="man/figures/Initial.png" width="500" />
+Once MAPPA is launched, A Shiny App will begin showing following default
+pages.
 
-### Overall structure of the app
-
-There are 4 main pages that can be selected at the sidebar. Empty
-default pages are shown below.
+  - Overview
+    
+    <img src="man/figures/Initial.png" width="500" />
 
   - Workspace
     
@@ -125,5 +124,7 @@ default pages are shown below.
     omitted
     
     <img src="man/figures/Exp_PPM_2.png" width="700" />
+
+### PPM object
 
 ### Quick tutorial
