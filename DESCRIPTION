@@ -1,0 +1,12 @@
+Package: MAPPA
+Type: Package
+Title: MAchine learning of Parameter-Phenotype mapping for Analyzing dynmical biological systems models
+Version: 0.0.1
+Author: Kyemyung Park
+Maintainer: Kyemyung Park <pkm304@gmail.com>
+Description: This is a package for understanding nonlinear relationships between parameter and phenotypic spaces of complex biological models by utilizing massive simulation and machine learning methods. This tool provides 1) parameter sampling scheme, 2) machine learning model building, and 3) interactive visualization of parameter-phenotype map.  
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports: Rcpp (>= 1.0.3), shiny, shinydashboard, rhandsontable, shinyFiles, randtoolbox, lhs, Rcpp, randomForest, rgl, ggplot2, gplots, plot3D, DT, caret
+LinkingTo: Rcpp
