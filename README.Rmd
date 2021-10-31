@@ -161,7 +161,7 @@ In this section, we work through MAPPA using an example model from <a href ='htt
 
 #### Define a dynamical model and determine parameters to be varied with their associated plausible ranges
 
-First, we take optimal model parameter values provided by the model provided by Tavasolly et al.
+First, we take optimal model parameter values provided by the model provided by Tavassoly et al.
 
 ```{r eval= T}
 prms.values.optimum <- c(C=20, BCL2T=3, IP3RT=1, CaT=2, CASP =0, wjnk_s = 1, wdapk_s = 1, 
