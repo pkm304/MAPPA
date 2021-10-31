@@ -126,9 +126,14 @@ pages.
     
     <img src="man/figures/Exp_PPM_2.png" width="700" />
 
-### PPM object <a name="Quick_tutorial"></a>
+### PPM object
 
-## Quick tutorial
+This is the central object in th MAPPA package implemented as S4 class
+type. A PPM object houses parameter space, phentipic space, and
+ml.models with associated functions to add to and obtain from those
+elements from a PPM object. A PPM object can be created by a command
+
+## Quick tutorial <a name="Quick_tutorial"></a>
 
 ### Overall workflow
 
