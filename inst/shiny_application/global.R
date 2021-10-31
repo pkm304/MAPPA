@@ -306,9 +306,9 @@ func_gen_prm_subranges <- function(prm.comb, prm.ranges, sampling.meth, prm.grid
 
 
 
-####PPM
+##PPM
 
-
+#### Modified from a code by  http://arxiv.org/abs/1605.09196 under license GLP-2
 vec.plot.bc.mod = function (model1, model2 = NULL, X, i.var, prm.ranges ,grid.lines = 100,
                             zoom = 1, limitY = F, zlim, gap, three.dim = T, posit.class = NULL, pred.type = NULL, cut.off = NULL, moreArgs = list(), ...) {
   library(scales)
