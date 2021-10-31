@@ -25,7 +25,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$file_PPM, {
     #inFile <- parseFilePaths(roots=c(wd='.'), input$file_PPM)
-    inFile <- parseFilePaths(roots=c("root"= "~/","cwd" = getwd()), input$file_PPM)
+    inFile <- shinyFiles::parseFilePaths(roots=c("root"= "~/","cwd" = getwd()), input$file_PPM)
     print(inFile$datapath)
 
     if(length(inFile$datapath) != 0){
