@@ -59,6 +59,7 @@ Each parameter combination is assigned its own parameter key to make it easily d
 
 ## Overall structure of the app <a name = "Overall_structure"></a>
 
+
 ### Graphical user interface
 
 Once MAPPA is launched, A Shiny App will begin showing following default pages.
@@ -93,13 +94,15 @@ Once MAPPA is launched, A Shiny App will begin showing following default pages.
 	
 	<img src="man/figures/Exp_PPM_2.png" width="700" />
 
-### PPM object <a name="Quick_tutorial"></a>
+### PPM object 
+
+This is the central object in th MAPPA package implemented as S4 class type. A PPM object houses parameter space, phentipic space, and ml.models with associated functions to add to and obtain from those elements from a PPM object. A PPM object can be created by a command 
 
 
 
 
 
-## Quick tutorial
+## Quick tutorial <a name="Quick_tutorial"></a>
 
 ### Overall workflow
 
