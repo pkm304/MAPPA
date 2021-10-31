@@ -24,6 +24,7 @@ Install this package using `devtools`. Then, run the function `launch_MAPPA`.
 
 ```{r eval=FALSE}
 devtools::install_github("pkm304/MAPPA")
+library(MAPPA)
 launch_MAPPA()
 ```
 
@@ -96,9 +97,43 @@ Once MAPPA is launched, A Shiny App will begin showing following default pages.
 
 ### PPM object 
 
-This is the central object in th MAPPA package implemented as S4 class type. A PPM object houses parameter space, phentipic space, and ml.models with associated functions to add to and obtain from those elements from a PPM object. A PPM object can be created by a command 
+1. Creating a PPM object
 
+This is the central object in the MAPPA package implemented as S4 class type. A PPM object houses parameter space, phentipic space, and ml.models with associated functions to add to and obtain from those elements from a PPM object. A PPM object can be created in the Shiny app or through commands:
 
+```{r}
+library(MAPPA)
+PPM.obj <- func_create_PPM( PPM.name = "Hello World!")
+get.PPM.name(PPM.obj)
+```
+
+2. Inspect/Retrieving the elements of the PPM object.
+
+Users can inspect the inside of the created PPM object using access functions or directly using `@` after the object name in the R console.
+
+- using `get.***` functions
+	
+```{r eval=F}
+ppm.name <-  get.PPM.name(object = PPM.obj)
+ppm.prms.space <- get.prm.ranges(object = PPM.obj)
+## There are other functions to access the objects.
+```
+
+- or use `@` 
+
+```{r eval=F}
+PPM.obj@
+```
+
+There are several more `get.***` functions to be listed below. Users do not have to know all of these functions and can almost entirely rely on the Shiny app. However, some functions are necessary since MAPPA does not provide all extra packages, yet. This will be explained in the Quick tutorial section when required.
+ 
+3. Overall data structure of a PPM object
+
+Since the created object `PPM.obj` is almost empty, all the elements preset at the creation can be shown as below. (Please do not try this with an objects with filled elements).
+
+```{r}
+PPM.obj
+```
 
 
 
@@ -108,15 +143,66 @@ This is the central object in th MAPPA package implemented as S4 class type. A P
 
 1. Define a dynamical model and determine parameters to be varied with their associated plausible ranges.
 
-2. Sample initial parameter combinations uniformly across parameter space defined by the plausible prameter space. Addition sampling can be performed adpatively focusing on certain region of interest later on.
+2. Create a PPM object.
+
+3. Sample initial parameter combinations uniformly across parameter space defined by the plausible prameter space. Addition sampling can be performed adpatively focusing on certain region of interest later on.
 
 3. (Not part of MAPPA) Run simulations for sampled parameter combinations and obtain phenotypes of interest out of the simulation results. 
 
-4. Train machine learning models mapping parameter space to phenotypes obtained from simulations, there by constructing PPMs (parameter space + phenotypic space + machine learning models).
+4. (Back to MAPPA) Register the obtained phenotypes out of simulations to the PPM object (to be explained in the Example section below).
 
-5. Explore PPMs using various visualization methods.
+5. Train machine learning models mapping parameter space to phenotypes obtained from simulations, thereby obtaining all emements of PPMs (parameter space, phenotypic space, machine learning models mapping parameter space and phenotypic space).
+
+6. Explore PPMs using various visualization methods.
 
 ### Example
+
+In this section, we work through MAPPA using an example model from <a href ='https://ascpt.onlinelibrary.wiley.com/doi/10.1002/psp4.29'> (Tavassoly et al., 2015)</a>, which is a detailed model describing interplay between autophagy and apoptosis. Users should use both Shiny App and R concole interactively. 
+
+#### Define a dynamical model and determine parameters to be varied with their associated plausible ranges
+
+First, we take optimal model parameter values provided by the model provided by Tavasolly et al.
+
+```{r eval= T}
+prms.values.optimum <- c(C=20, BCL2T=3, IP3RT=1, CaT=2, CASP =0, wjnk_s = 1, wdapk_s = 1, 
+												 wbcl_j = 1, wmtor_ca = -1, watg_m = -1, wbh_a = 1, wbec_d = 1, Wcp_Ca = 1, 
+												 W_ATG5C = -1, ka = 1.77, kda = 0.0948, ksb = 2.08, kc = 0.510, krb = 1.41, 
+												 kra = 3.83, Gj = 1.73, Gd = 4.05, Gb = 5.21, Gt = 1.61, Gg = 1.04, Gh = 0.0101, 
+												 Gl = 3.43, Ga = 0.5240, Gcp = 1.95, sigmaj = 2.42, sigmad = 1.01, sigmab = 4.57,
+												 sigmah = 2.89, sigmag = 20.8, sigmat = 3.51, sigmal = 7.99, sigmacp = 32.3, 
+												 sigmaA = 4.83, kcasp = 2.01, kin = 9.64, kout = 6.31, wjnk0 = -1.22, wdapk0 = -2.98,
+												 wbcl0 = -0.614, wmtor0 = 0.202, watg0 = 0.144, wbh0 = -1.26, wbec0 = -0.647, 
+												 W_ATG50 = 0.215, Wcp_0 = -0.514, wbh_s = 0.0801, wbh_c = 0.0003)
+```
+
+Then, based on biological consideration, choose what parameters to vary and determine associated ranges to sample from. An example is as below.
+
+```{r}
+# Chosen parameters to be varied
+prms.varied <- c("C", "BCL2T", "ka","kda", "ksb", "kc", "krb",
+								 "kra", "Gj", "Gd", "Gb", "Gt", "Gg", "Gh", "Gl", 
+								 "Ga", "Gcp", "sigmaj", "sigmad", "sigmab", "sigmah", 
+								 "sigmag", "sigmat", "sigmal", "sigmacp", "sigmaA", "kcasp", 
+								 "kin", "kout", "wjnk0", "wdapk0", "wbcl0", "wmtor0", "watg0", 
+								 "wbh0", "wbec0", "W_ATG50", "Wcp_0", "wbh_s", "wbh_c")
+
+
+# Determine ranges for chosen prms. In this example we set the range 0.2 fold ~ 1.8 fold of the optimal values. 
+# Users flexiably specifiy ranges based on their own purpose and qustions.
+# For simplicity, MAPPA deals with only positive values. Respective signs can be restored at the actual simulation codes.
+prms.values.optimum.varied  <- abs(prms.values.optimum[prms.varied]) 
+prms.optimum.varied.min <- prms.values.optimum.varied - 0.8*prms.values.optimum.varied # the lower limits of the ranges
+prms.optimum.varied.max <- prms.values.optimum.varied + 0.8*prms.values.optimum.varied # the upper limits of the ranges
+
+prm.ranges <- data.frame(names = names(prms.values.optimum.varied),
+												 min = prms.optimum.varied.min,
+												 max = prms.optimum.varied.max)
+
+#Save as csv files with header names, names, min, max
+write.table(prm.ranges, file = "examples/prm_ranges.csv", quote = F, row.names = F, col.names = T, sep = ",")
+```
+
+Next, launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
 
 
 

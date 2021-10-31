@@ -21,7 +21,7 @@ setMethod(
   f="initialize",
   signature = "PPM",
   definition = function(.Object, name){
-    if(0){Stop("initialize PPM: error")}else{}
+    #if(0){Stop("initialize PPM: error")}else{}
     .Object@PPM.name <- name
     .Object@prm.space$prm.ranges <- list()
     .Object@prm.space$initial.prm.combs <- list()

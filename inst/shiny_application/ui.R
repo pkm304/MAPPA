@@ -1,6 +1,6 @@
-ui <- dashboardPage(
-  dashboardHeader(title = "MAPPA",
-                  dropdownMenu()),
+ui <- shinydashboard::dashboardPage(
+  shinydashboard::dashboardHeader(title = "MAPPA",
+                                  shinydashboard::dropdownMenu()),
 
   # title = "MAPPA",
   # header = tags$header(class = "main-header",
@@ -21,28 +21,28 @@ ui <- dashboardPage(
   #
   # ),
 
-  dashboardSidebar(
-    sidebarMenu(id = "side_menu_tab",
-      menuItem("Overview", tabName = "overview_tab"),
-      menuItem("Workspace", tabName = "workspace_tab"),
-      menuItem("Parameter combination sampling", tabName = "prm_smpl_tab",
-               menuSubItem("Inital sampling", tabName = "init_smpl_tab"),
-               menuSubItem("Additional sampling", tabName = "add_smpl_tab")),
-      menuItem("ML model training", tabName = "ml_model_tab"),
-      menuItem("Explore PPM", tabName = "exp_phase_tab")
+  shinydashboard::dashboardSidebar(
+    shinydashboard::sidebarMenu(id = "side_menu_tab",
+                                shinydashboard::menuItem("Overview", tabName = "overview_tab"),
+                                shinydashboard::menuItem("Workspace", tabName = "workspace_tab"),
+                                shinydashboard::menuItem("Parameter combination sampling", tabName = "prm_smpl_tab",
+                                                         shinydashboard::menuSubItem("Inital sampling", tabName = "init_smpl_tab"),
+                                                         shinydashboard::menuSubItem("Additional sampling", tabName = "add_smpl_tab")),
+                                shinydashboard::menuItem("ML model training", tabName = "ml_model_tab"),
+                                shinydashboard::menuItem("Explore PPM", tabName = "exp_phase_tab")
     )
 
   ),
-  dashboardBody(
+  shinydashboard::dashboardBody(
     tags$head(
       tags$style(type="text/css", "#conf_mat tr td:first-child {font-weight:bold;} #conf_stats tr td:first-child {font-weight:bold;}")
     ),
 
-    tabItems(
-      tabItem("overview_tab",
+    shinydashboard::tabItems(
+      shinydashboard::tabItem("overview_tab",
                 tags$div(img(src = "Figure1.png", width = "800"))
                     ),
-      tabItem("workspace_tab",
+      shinydashboard::tabItem("workspace_tab",
               fluidRow(
 
                 column(3,h4("Create a new PPM."),
@@ -50,7 +50,7 @@ ui <- dashboardPage(
                        actionButton("new_PPM","Create!")),
                 column(3, h4("Open an existing PPM."),
 
-                       shinyFilesButton("file_PPM",
+                       shinyFiles::shinyFilesButton("file_PPM",
                                            "Browse...","Please select a PPM.",
                                            FALSE)
                        #fileInput("file_PPM",
@@ -59,7 +59,7 @@ ui <- dashboardPage(
                 column(3,h4("Save the current PPM (.Rds)"),
                        #textInput("file_PPM_name", "File name.", value=".Rds"),
                        #downloadButton("save_PPM","Save!")),
-                       shinySaveButton("save_PPM", "Save!", "Save as ...", filetype=list(Rds="Rds"))
+                       shinyFiles::shinySaveButton("save_PPM", "Save!", "Save as ...", filetype=list(Rds="Rds"))
                 )
               ),
               br(),
@@ -83,11 +83,11 @@ ui <- dashboardPage(
               ),
 
 
-      tabItem("init_smpl_tab",
+      shinydashboard::tabItem("init_smpl_tab",
 
               #h1("Parameter combination generation"),
               sidebarLayout(
-                 sidebarPanel(selectInput("sampling_meth", label = h5("Select a sampling method."),
+                sidebarPanel(selectInput("sampling_meth", label = h5("Select a sampling method."),
                                          choices = list("Uniform grid" = "unif_grid", "Pseudorandom" = "pseudorandom", "Sobol'" = "sobol'", "Latin hypercube" = "latin_hyp")),
                              numericInput("prm_comb_num", label = h5("Number of parameter combinations"), value = 1000, min = 1, max = 10000000),
                              h5("Parameter keys"),
@@ -98,7 +98,7 @@ ui <- dashboardPage(
                              checkboxInput("continue", label = h5("Continue"), value = FALSE),
                              actionButton("gen_prm_combs", "Generate!"),
                              #uiOutput("save_prm_combs_ui")
-                             shinySaveButton("save_prm_combs", "Save as a file", "Save parameter combinations as ...", filetype=list(text="txt", csv = "csv")),
+                             shinyFiles::shinySaveButton("save_prm_combs", "Save as a file", "Save parameter combinations as ...", filetype=list(text="txt", csv = "csv")),
                              br(),
                              textInput("init_prm_combs_name",label = h5("Enter a name for this parameter set")),
                              actionButton("init_prm_combs_save2ps", "Add to PPM"),
@@ -124,7 +124,7 @@ ui <- dashboardPage(
                                    actionButton("sel_desel_all", label = "Select/Deselect All"))
                           ),
                           fluidRow(
-                            column(6,rHandsontableOutput("parameter_ranges")
+                            column(6,rhandsontable::rHandsontableOutput("parameter_ranges")
                             )
 
                           ),
@@ -132,7 +132,7 @@ ui <- dashboardPage(
                           fluidRow(
                             column(3, textInput("prm_ranges_name", h5("Name of parameter ranges")),
                                    actionButton("prm_ranges_save2ps",label = "Add to PPM"),
-                                   shinySaveButton("save", "Save as a file", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv"))),
+                                   shinyFiles::shinySaveButton("save", "Save as a file", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv"))),
                             column(3, uiOutput("prm_grids_gen_ui"))
                           ),
                           hr(),
@@ -156,10 +156,10 @@ ui <- dashboardPage(
 
 
               ),
-      tabItem("add_smpl_tab",
+      shinydashboard::tabItem("add_smpl_tab",
              # h1("Parameter combination zoom-in"),
-              sidebarLayout(
-                sidebarPanel(selectInput("add_sampling_meth", label = h5("Select a sampling method."),
+             sidebarLayout(
+               sidebarPanel(selectInput("add_sampling_meth", label = h5("Select a sampling method."),
                                          choices = list("Uniform grid" = "unif_grid", "Pseudorandom" = "pseudorandom", "Sobol'" = "sobol'", "Latin hypercube" = "latin_hyp")),
                              numericInput("add_prm_comb_num", label = h5("Number of sampling per each selected combination"), value = 100, min = 1, max = 10000000),
 
@@ -172,7 +172,7 @@ ui <- dashboardPage(
 
                              actionButton("gen_prm_combs_zoomin", "Generate!"),
                              #uiOutput("save_prm_combs_ui")
-                             shinySaveButton("save_prm_combs_zoomin", "Save as a file", "Save parameter combinations as ...", filetype=list(text="txt", csv = "csv")),
+                             shinyFiles::shinySaveButton("save_prm_combs_zoomin", "Save as a file", "Save parameter combinations as ...", filetype=list(text="txt", csv = "csv")),
                              br(),
                              textInput("addit_prm_combs_name",label = h5("Enter a name for this parameter set")),
                              actionButton("addit_prm_combs_save2ps", "Add to PPM"),
@@ -183,7 +183,7 @@ ui <- dashboardPage(
 
 
 
-                mainPanel(h4("Load an existing parameter space"),
+               mainPanel(h4("Load an existing parameter space"),
                           fluidRow(
                             column(4,uiOutput("laad_prm_ranges_ui")),
                             column(4,uiOutput("load_init_prm_combs_ui")),
@@ -205,7 +205,7 @@ ui <- dashboardPage(
                 )
 
       ),
-      tabItem("ml_model_tab",
+      shinydashboard::tabItem("ml_model_tab",
               fluidRow(
                 column(3, uiOutput("list_phenotypes_ml_tab_ui"),
                        checkboxInput("with_ml.models_ml", label = h5("With ML models"))),
@@ -243,7 +243,7 @@ ui <- dashboardPage(
                               actionButton("remove_ml", h5("Remove")))),
               br(),
               fluidRow(
-                tabBox(id = "selection_ml", selected = NULL, width = 12, #type = "pills",
+                shinydashboard::tabBox(id = "selection_ml", selected = NULL, width = 12, #type = "pills",
                        tabPanel("Info of trained ML model", value = "tab_info_ml",
                                 column(4,
                                        plotOutput("performance")
@@ -266,7 +266,7 @@ ui <- dashboardPage(
               ),
 
 
-      tabItem("exp_phase_tab",
+      shinydashboard::tabItem("exp_phase_tab",
               fluidRow(
                 column(3, uiOutput("list_phenotypes_tab_ui"),
                        checkboxInput("with_ml.models", label = h5("With ML models"))),
@@ -328,7 +328,7 @@ ui <- dashboardPage(
 
               br(),
               fluidRow(
-                tabBox(id = "selection", selected = NULL, width = 12, #type = "pills",
+                shinydashboard::tabBox(id = "selection", selected = NULL, width = 12, #type = "pills",
                             tabPanel("Heatmaps for selected points", value = "tab_hclust",
                                      fluidRow(
                                        uiOutput("gen_hclust_ui")

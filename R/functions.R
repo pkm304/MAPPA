@@ -7,6 +7,19 @@ launch_MAPPA <- function(x, ...)
 }
 
 
+###convert attributes from PhaseX to MAPPA
+func_conv_phase_MAPPA <- function(obj){
+  names(attributes(obj))[1] <- "PPM.name"
+  attributes(obj)$class[1] <- "PPM"
+  attributes(attributes(obj)$class )$package <- "MAPPA"
+  return(obj)
+}
+
+
+###Create a PPM object
+func_create_PPM <- function(PPM.name){
+  return(methods::new(Class = "PPM", PPM.name))
+}
 
 
 ##generate parameter grids
@@ -63,7 +76,8 @@ func_gen_prm_combs <- function(prm.ranges, prm.comb.num, sampling.meth, prm.grid
         prm.combinations[,i] = t(prm.grids[i,vec.temp+1])
         prm.combinations[,i] = signif(prm.combinations[,i],digits = 6)
       }
-      return(prm.combinations)
+      return(list(prm.combs =prm.combinations)) # from global.R
+      #return(prm.combinations)
     }
   }else if(sampling.meth == "pseudorandom"){
     prm.combs.pseudorand = matrix(NA, nrow = prm.comb.num, ncol = nrow(prm.ranges))
@@ -73,11 +87,11 @@ func_gen_prm_combs <- function(prm.ranges, prm.comb.num, sampling.meth, prm.grid
     set.seed(1)
     if(continue == TRUE && !is.null(count) && count != 0){
 
-      runif(count*nrow(prm.ranges))
+      stats::runif(count*nrow(prm.ranges))
     }
 
     for(i in 1:nrow(prm.ranges)){
-      prm.combs.pseudorand[,i] = runif(prm.comb.num)
+      prm.combs.pseudorand[,i] = stats::runif(prm.comb.num)
       prm.combinations[,i] = prm.combs.pseudorand[,i]
       prm.combinations.z[,i] = prm.combs.pseudorand[,i]
 
@@ -103,10 +117,10 @@ func_gen_prm_combs <- function(prm.ranges, prm.comb.num, sampling.meth, prm.grid
     set.seed(1)
 
     if(continue == TRUE && !is.null(count) && count != 0 ){
-      prm.combs.sobol = sobol(count + prm.comb.num, dim=nrow(prm.ranges), scrambling = 3)
+      prm.combs.sobol = randtoolbox::sobol(count + prm.comb.num, dim=nrow(prm.ranges), scrambling = 3)
       prm.combs.sobol <- prm.combs.sobol[(count+1):(count+prm.comb.num),]
     }else{
-      prm.combs.sobol = sobol(prm.comb.num, dim=nrow(prm.ranges), scrambling = 3)
+      prm.combs.sobol = randtoolbox::sobol(prm.comb.num, dim=nrow(prm.ranges), scrambling = 3)
     }
 
 
@@ -151,11 +165,11 @@ func_gen_prm_combs <- function(prm.ranges, prm.comb.num, sampling.meth, prm.grid
     ##warning don't try optimumLHS for prm.comb.num > 100,
     set.seed(1)
     if(continue == TRUE && !is.null(count) && count != 0 ){
-      prm.combs.lhs = randomLHS(count, nrow(prm.ranges))
-      prm.combs.lhs = augmentLHS(prm.combs.lhs, prm.comb.num)
+      prm.combs.lhs = lhs::randomLHS(count, nrow(prm.ranges))
+      prm.combs.lhs = lhs::augmentLHS(prm.combs.lhs, prm.comb.num)
       prm.combs.lhs = prm.combs.lhs[(count+1):(count+prm.comb.num),]
     }else{
-      prm.combs.lhs = randomLHS(prm.comb.num, nrow(prm.ranges))
+      prm.combs.lhs = lhs::randomLHS(prm.comb.num, nrow(prm.ranges))
     }
     #prm.combinations = data.frame(optimumLHS(prm.comb.num, nrow(prm.ranges), 10))
 
@@ -300,10 +314,10 @@ func_gen_prm_subranges <- function(prm.comb, prm.ranges, sampling.meth, prm.grid
 
 ####phasespace
 
-###cite arxiv paper (forest...)
+#### Modified from a code by  http://arxiv.org/abs/1605.09196 under license GLP-2
 vec.plot.bc.mod = function (model1, model2 = NULL, X, i.var, prm.ranges ,grid.lines = 100,
                             zoom = 1, limitY = F, zlim, gap, three.dim = T, posit.class = NULL, pred.type = NULL, cut.off = NULL, moreArgs = list(), ...) {
-  library(scales)
+  #library(scales)
   d = length(i.var)
 
   scales = lapply(i.var, function(i) {
@@ -322,15 +336,15 @@ vec.plot.bc.mod = function (model1, model2 = NULL, X, i.var, prm.ranges ,grid.li
   Xtest.vec[, i.var] = anchor.points
 
   if(model1$type == "regression" & !is.null(model2)){
-    yhat.vec = predict(model1, Xtest.vec) - predict(model2, Xtest.vec)
-    yhat.pt = predict(model1,Xgeneralized) - predict(model2, Xgeneralized)
+    yhat.vec = stats::predict(model1, Xtest.vec) - stats::predict(model2, Xtest.vec)
+    yhat.pt = stats::predict(model1,Xgeneralized) - stats::predict(model2, Xgeneralized)
   }else if(model1$type == "regression" & is.null(model2)){
-    yhat.vec = predict(model1, Xtest.vec)
-    yhat.pt = predict(model1,Xgeneralized)
+    yhat.vec = stats::predict(model1, Xtest.vec)
+    yhat.pt = stats::predict(model1,Xgeneralized)
   }else if(model1$type == "classification"){
-    yhat.vec = predict(model1, Xtest.vec, "prob")
+    yhat.vec = stats::predict(model1, Xtest.vec, "prob")
     yhat.vec = yhat.vec[,posit.class]
-    yhat.pt = predict(model1,Xgeneralized, "prob")
+    yhat.pt = stats::predict(model1,Xgeneralized, "prob")
     yhat.pt = yhat.pt[,posit.class]
 
     if(pred.type == "Binary"){
@@ -350,23 +364,23 @@ vec.plot.bc.mod = function (model1, model2 = NULL, X, i.var, prm.ranges ,grid.li
 
   if (d == 2) {
     color.gradient <- function(x, colors=c("blue", "green","yellow","red"), colsteps=100) {
-      return( colorRampPalette(colors) (colsteps) [ findInterval(x, seq(zlim[1],zlim[2], length.out=colsteps)) ] )
+      return( grDevices::colorRampPalette(colors) (colsteps) [ findInterval(x, seq(zlim[1],zlim[2], length.out=colsteps)) ] )
     }
 
     if(three.dim == T){
 
-      plot3d(x = anchor.points[,1], y = anchor.points[,2], z = yhat.vec, xlab =i.var[1], ylab =i.var[2],
+      rgl::plot3d(x = anchor.points[,1], y = anchor.points[,2], z = yhat.vec, xlab =i.var[1], ylab =i.var[2],
              main = "Prediction", zlim =zlim, zlab = "Phenotype")
-      plot3d(x = values.to.plot[1], y = values.to.plot[2], z = yhat.pt + abs(gap*yhat.pt), xlab = i.var[1], ylab = i.var[2],
+      rgl::plot3d(x = values.to.plot[1], y = values.to.plot[2], z = yhat.pt + abs(gap*yhat.pt), xlab = i.var[1], ylab = i.var[2],
              main = "Prediction", col = "red", size = 7, add = TRUE, zlim = zlim)
-      surface3d(x = scales[[1]], y = scales[[2]],
+      rgl::surface3d(x = scales[[1]], y = scales[[2]],
                 z = yhat.vec, col = color.gradient(yhat.vec), size = 4, alpha = 0.4, zlim = zlim)
 
 
     }else{
 
-      image2D( matrix(yhat.vec, nrow = grid.lines), x = scales[[1]], y = scales[[2]], contour = T, zlim = zlim, xlab = i.var[1], ylab =i.var[2]  )
-      points(x = values.to.plot[1], y = values.to.plot[2], pch =  19 )
+      plot3D::image2D( matrix(yhat.vec, nrow = grid.lines), x = scales[[1]], y = scales[[2]], contour = T, zlim = zlim, xlab = i.var[1], ylab =i.var[2]  )
+      graphics::points(x = values.to.plot[1], y = values.to.plot[2], pch =  19 )
 
 
     }
@@ -406,12 +420,12 @@ fun.scale.conv = function(sample_meth, prm.ranges, raw.smpl = NULL, prm.grids = 
       for(i in 1:temp.num.prm){
         if(prm.ranges$log.scale[i] == FALSE){
           temp.mean = mean(as.numeric(prm.grids[i,c(names(prm.grids)[c(2:temp.num.grids[i])], "max")]),na.rm = T)
-          temp.std = sd(prm.grids[i,c(names(prm.grids)[c(2:temp.num.grids[i])], "max")],na.rm = T)
+          temp.std = stats::sd(prm.grids[i,c(names(prm.grids)[c(2:temp.num.grids[i])], "max")],na.rm = T)
           temp.prm.combs.val[,i] =  temp.prm.combs.val.z[,i]*temp.std + temp.mean
 
         }else{
           temp.mean = mean(as.numeric(log(prm.grids[i,c(names(prm.grids)[c(2:temp.num.grids[i])], "max")])),na.rm = T)
-          temp.std = sd(log(prm.grids[i,c(names(prm.grids)[c(2:temp.num.grids[i])], "max")]),na.rm = T)
+          temp.std = stats::sd(log(prm.grids[i,c(names(prm.grids)[c(2:temp.num.grids[i])], "max")]),na.rm = T)
           temp.prm.combs.val[,i] =  exp(temp.prm.combs.val.z[,i]*temp.std + temp.mean)
         }
       }
@@ -422,13 +436,13 @@ fun.scale.conv = function(sample_meth, prm.ranges, raw.smpl = NULL, prm.grids = 
       for(i in 1:temp.num.prm){
         if(prm.ranges$log.scale[i] == FALSE){
           temp.mean = mean(raw.smpl[,i+1])
-          temp.std = sd(raw.smpl[,i+1])
+          temp.std = stats::sd(raw.smpl[,i+1])
           temp.prm.combs.val.raw[,i] <- temp.prm.combs.val.z[,i]*temp.std + temp.mean
           temp.prm.combs.val[,i] = prm.ranges$min[i] + (prm.ranges$max[i]-prm.ranges$min[i])*temp.prm.combs.val.raw[,i]
 
         }else{
           temp.mean = mean(raw.smpl[,i+1])
-          temp.std = sd(raw.smpl[,i+1])
+          temp.std = stats::sd(raw.smpl[,i+1])
           temp.prm.combs.val.raw[,i] <- temp.prm.combs.val.z[,i]*temp.std + temp.mean
           temp.prm.combs.val[,i] = exp(log(prm.ranges$min[i]) + (log(prm.ranges$max[i])-log(prm.ranges$min[i]))*temp.prm.combs.val.raw[,i])
         }
@@ -443,7 +457,7 @@ fun.scale.conv = function(sample_meth, prm.ranges, raw.smpl = NULL, prm.grids = 
       for(i in 1:temp.num.prm){
         if(prm.ranges$log.scale[i] == FALSE){
           temp.mean = mean(as.numeric(prm.grids[i,c(2:(temp.num.grids[i]),max(temp.num.grids+1))]),na.rm = T)
-          temp.std = sd(prm.grids[i,c(2:(temp.num.grids[i]),max(temp.num.grids+1))],na.rm = T)
+          temp.std = stats::sd(prm.grids[i,c(2:(temp.num.grids[i]),max(temp.num.grids+1))],na.rm = T)
 
           if(temp.std != 0){
             temp.prm.combs.val.z[,i] =  (temp.prm.combs.val[,i] - temp.mean)/temp.std
@@ -454,7 +468,7 @@ fun.scale.conv = function(sample_meth, prm.ranges, raw.smpl = NULL, prm.grids = 
         }else{
           temp.mean = mean(as.numeric(log(prm.grids[i,c(2:(temp.num.grids[i]),max(temp.num.grids+1))])),na.rm = T)
 
-          temp.std = sd(log(prm.grids[i,c(2:(temp.num.grids[i]),max(temp.num.grids+1))]),na.rm = T)
+          temp.std = stats::sd(log(prm.grids[i,c(2:(temp.num.grids[i]),max(temp.num.grids+1))]),na.rm = T)
 
           if(temp.std != 0){
             temp.prm.combs.val.z[,i] =  (log(temp.prm.combs.val[,i]) - temp.mean)/temp.std
@@ -470,7 +484,7 @@ fun.scale.conv = function(sample_meth, prm.ranges, raw.smpl = NULL, prm.grids = 
       for(i in 1:temp.num.prm){
         if(prm.ranges$log.scale[i] == FALSE){
           temp.mean = mean(raw.smpl[,i+1])
-          temp.std = sd(raw.smpl[,i+1])
+          temp.std = stats::sd(raw.smpl[,i+1])
 
           temp.prm.combs.val.raw[,i] <- (temp.prm.combs.val[,i] - prm.ranges$min[i])/(prm.ranges$max[i]-prm.ranges$min[i])
 
@@ -482,7 +496,7 @@ fun.scale.conv = function(sample_meth, prm.ranges, raw.smpl = NULL, prm.grids = 
 
         }else{
           temp.mean = mean(raw.smpl[,i+1])
-          temp.std = sd(raw.smpl[,i+1])
+          temp.std = stats::sd(raw.smpl[,i+1])
           temp.prm.combs.val.raw[,i] <- (log(temp.prm.combs.val[,i]) - log(prm.ranges$min[i]))/ (log(prm.ranges$max[i])-log(prm.ranges$min[i]))
 
           if(temp.std != 0){
@@ -500,15 +514,13 @@ fun.scale.conv = function(sample_meth, prm.ranges, raw.smpl = NULL, prm.grids = 
 
 
   }
-
-
-
 }
+
 
 rocpr = function(rf.obj,X.test = NULL, ref = NULL, positive){
   #library(randomForest)
   if(!is.null(X.test)){
-    p.prob = predict(rf.obj, X.test, type = "prob")
+    p.prob = stats::predict(rf.obj, X.test, type = "prob")
   }else{
     p.prob = rf.obj$votes
   }
@@ -531,7 +543,7 @@ rocpr = function(rf.obj,X.test = NULL, ref = NULL, positive){
     temp.vec <- factor(append(p.binary,as.character(ref)))
     p.binary <- temp.vec[1:length(p.binary)]
     ref <- temp.vec[-(1:length(p.binary))]
-    cfm = confusionMatrix(p.binary, ref, positive)
+    cfm = caret::confusionMatrix(p.binary, ref, positive)
     roc[j+1, 1] = 1 - cfm$byClass[2]
     roc[j+1, 2] = cfm$byClass[1]
     colnames(roc) <- c("False Positive", "True Positive")
@@ -546,18 +558,49 @@ rocpr = function(rf.obj,X.test = NULL, ref = NULL, positive){
   return(list(roc = roc, prec.recall = prec.recall, bal.acc = bal.acc, conf.mat = conf.mat))
 }
 
-colfunc<-colorRampPalette(c("royalblue","springgreen","yellow","red"))
+colfunc<-grDevices::colorRampPalette(c("royalblue","springgreen","yellow","red"))
+
+
+
+##server 359
+
+func_rhandsontable_prm_ranges <- function(DF, option, ncol.temp = NULL){
+  if(option == "unif_grid"){
+    rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% rhandsontable::hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+  }else {
+    rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+
+  }
+}
+## server 453
+func_rhandsontable_prm_grids <- function(DF, ncol.temp = NULL){
+  rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )   %>% rhandsontable::hot_col(col = c(2:ncol.temp),renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+
+}
+
+## Server 960
+func_rhandsontable_prm_ranges_add1 <- function(df){
+  rhandsontable::rhandsontable(df, digit = 10, contextMenu = FALSE )   %>% rhandsontable::hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+
+}
+
+func_rhandsontable_prm_ranges_add2 <- function(df, ncol.temp = NULL){
+  rhandsontable::rhandsontable(df, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max","frac.range"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% rhandsontable::hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+}
+func_rhandsontable_prm_ranges_add3 <- function(df){
+  rhandsontable::rhandsontable(df, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max","frac.range"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+}
 
 ###help popup
 ###https://github.com/daattali/ddpcr/tree/master/inst/shiny/ui
 helpPopup <- function(content, title = NULL) {
-  a(href = "#",
+  shiny::a(href = "#",
     class = "popover-link",
     `data-toggle` = "popover",
     `data-title` = title,
     `data-content` = content,
     `data-html` = "true",
     `data-trigger` = "hover",
-    icon("question-circle")
+    shiny::icon("question-circle")
   )
 }

@@ -16,11 +16,12 @@ server <- function(input, output, session) {
 
   ##create a new PPM
   observeEvent(input$new_PPM,{
-   PPM$object <- new(Class = "PPM", input$PPM_name)
+    PPM$object <- func_create_PPM(PPM.name = input$PPM_name)
+    #new(Class = "PPM", input$PPM_name)
   })
 
 
-  shinyFileChoose(input,'file_PPM', session=session,roots= c("root"= "~/", "cwd" = getwd()), defaultRoot = 'root')
+  shinyFiles::shinyFileChoose(input,'file_PPM', session=session,roots= c("root"= "~/", "cwd" = getwd()), defaultRoot = 'root')
 
   observeEvent(input$file_PPM, {
     #inFile <- parseFilePaths(roots=c(wd='.'), input$file_PPM)
@@ -49,9 +50,9 @@ server <- function(input, output, session) {
 
   observe({
     volumes <- c("root"= "~/", "cwd" = getwd())
-    shinyFileSave(input, "save_PPM", roots = volumes)
+    shinyFiles::shinyFileSave(input, "save_PPM", roots = volumes)
     #print(input$save_PPM)
-    file.info <- parseSavePath(volumes, input$save_PPM)
+    file.info <- shinyFiles::parseSavePath(volumes, input$save_PPM)
     #print(file.info)
 
     if(nrow(file.info) > 0){
@@ -194,7 +195,7 @@ server <- function(input, output, session) {
   observeEvent(input$init_prm_combs_save2ps,{
 
     if(!is.null(prm.combinations$DF) && !is.null(input$init_prm_combs_name)){
-      prm.ranges$DF <- hot_to_r(input$parameter_ranges)
+      prm.ranges$DF <- rhandsontable::hot_to_r(input$parameter_ranges)
 
       if(input$sampling_meth == "unif_grid"){
         temp.prm.combs.z <- fun.scale.conv(sample_meth = input$sampling_meth, prm.ranges = prm.ranges$DF, prm.grids = prm.grids$DF, prm.combs = prm.combinations$DF[,-1], z.to.org = FALSE )
@@ -282,7 +283,7 @@ server <- function(input, output, session) {
 
   #adding or removing rows
   observeEvent(input$prm_num,{
-    prm.ranges$DF = hot_to_r(input$parameter_ranges)
+    prm.ranges$DF = rhandsontable::hot_to_r(input$parameter_ranges)
     current.nrow = nrow(prm.ranges$DF)
     if(input$prm_num - current.nrow  > 0 ){
 
@@ -348,23 +349,25 @@ server <- function(input, output, session) {
 
 
   #display of parameter ranges
-  output$parameter_ranges <- renderRHandsontable({
+  output$parameter_ranges <- rhandsontable::renderRHandsontable({
     input$reset
     DF <- prm.ranges$DF
     # print(DF)
     ncol.temp = ncol(DF)
     isolate({
       if(input$sampling_meth == "unif_grid"){
-        rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+        #rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+        func_rhandsontable_prm_ranges(DF, option = input$sampling_meth, ncol.temp)
       } else {
-        rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+        #rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+        func_rhandsontable_prm_ranges(DF, option = input$sampling_meth)
       }
     })
   })
 
   #setting for log scale
   observeEvent(input$sel_desel_all, {
-    prm.ranges$DF <- hot_to_r(input$parameter_ranges)
+    prm.ranges$DF <- rhandsontable::hot_to_r(input$parameter_ranges)
     if(all.equal(prm.ranges$DF[["log.scale"]], rep(TRUE, nrow(prm.ranges$DF))) != TRUE){
       prm.ranges$DF["log.scale"] = TRUE
     }else{
@@ -389,16 +392,16 @@ server <- function(input, output, session) {
   ##Saving again without changing file path does not work.
   observe({
     volumes = c("root"= "~/", "cwd" = getwd())
-    shinyFileSave(input, "save", roots = volumes)
+    shinyFiles::shinyFileSave(input, "save", roots = volumes)
     #print(input$save)
-    file.info = parseSavePath(volumes, input$save)
+    file.info = shinyFiles::parseSavePath(volumes, input$save)
     #print(file.info)
     if(nrow(file.info) > 0){
       if(file.info$type == "text"){
-        isolate({prm.ranges$DF <- hot_to_r(input$parameter_ranges)
+        isolate({prm.ranges$DF <- rhandsontable::hot_to_r(input$parameter_ranges)
         write.table(prm.ranges$DF[,c("names", "min", "max")],file = as.character(file.info$datapath) ,quote = FALSE, col.names = TRUE, row.names = FALSE)})
       }else if (file.info$type == "csv"){
-        isolate({prm.ranges$DF <- hot_to_r(input$parameter_ranges)
+        isolate({prm.ranges$DF <- rhandsontable::hot_to_r(input$parameter_ranges)
         write.csv(prm.ranges$DF[,c("names", "min", "max")],file = as.character(file.info$datapath) ,quote = FALSE, row.names = FALSE)})
       }
     }
@@ -422,7 +425,7 @@ server <- function(input, output, session) {
            #shinySaveButton("save_prm_grids", "Save parameter grids", "Save parameter combinations as ...", filetype=list(text="txt", csv = "csv")))
            downloadButton("save_prm_grids", "Save parameter grids"))
     }else if(input$sampling_meth == "unif_grid" && !is.null(prm.grids$DF) && input$check_prm_grids_mod){
-      list(rHandsontableOutput("prm_grids_mod"),
+      list(rhandsontable::rHandsontableOutput("prm_grids_mod"),
            downloadButton("save_prm_grids", "Save parameter grids"))
     }
   })
@@ -434,7 +437,7 @@ server <- function(input, output, session) {
 
   #generate parameter grids, later implement filter for nonzero value
   observeEvent(input$gen_prm_grids,{
-    prm.ranges$DF <- hot_to_r(input$parameter_ranges)
+    prm.ranges$DF <- rhandsontable::hot_to_r(input$parameter_ranges)
     prm.grids$DF <-  func_gen_prm_grids(prm.ranges = prm.ranges$DF)
   })
 
@@ -442,18 +445,19 @@ server <- function(input, output, session) {
     prm.grids$DF
   })
 
-  output$prm_grids_mod <- renderRHandsontable({
+  output$prm_grids_mod <- rhandsontable::renderRHandsontable({
     DF <- prm.grids$DF
     # print(DF)
     ncol.temp = ncol(DF)
     isolate({
-      rhandsontable(DF, digit = 10, contextMenu = FALSE )   %>% hot_col(col = c(2:ncol.temp),renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+      #rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )   %>% hot_col(col = c(2:ncol.temp),renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+      func_rhandsontable_prm_grids(DF, ncol.temp)
     })
   })
 
   observeEvent(input$check_prm_grids_mod,{
     if(!input$check_prm_grids_mod && !is.null(input$prm_grids_mod)){
-      prm.grids$DF <- hot_to_r(input$prm_grids_mod)
+      prm.grids$DF <- rhandsontable::hot_to_r(input$prm_grids_mod)
     }
   })
 
@@ -464,7 +468,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       if(input$check_prm_grids_mod){
-        prm.grids$DF <- hot_to_r(input$prm_grids_mod)
+        prm.grids$DF <- rhandsontable::hot_to_r(input$prm_grids_mod)
       }
       write.table(prm.grids$DF,file  ,quote = FALSE, col.names = TRUE, row.names = FALSE)
     }
@@ -525,15 +529,15 @@ server <- function(input, output, session) {
 
     prm.combinations$rd_seed = temp.pkey$rd_seeds
     ##2.generate parameter combinations
-    isolate(prm.ranges$DF <-  hot_to_r(input$parameter_ranges))
+    isolate(prm.ranges$DF <-  rhandsontable::hot_to_r(input$parameter_ranges))
 
     if(input$check_prm_grids_mod){
-      prm.grids$DF <-  hot_to_r(input$prm_grids_mod)
+      prm.grids$DF <-  rhandsontable::hot_to_r(input$prm_grids_mod)
     }
     temp.DF <- func_gen_prm_combs(prm.ranges$DF, input$prm_comb_num, input$sampling_meth, prm.grids$DF, continue = input$continue, count = get.prm.combs.count(PPM$object, smpl_method = input$sampling_meth, prm.ranges.name = input$prm_ranges_select) )
     add.prm.combs.count(PPM$object) <- list( smpl_method = input$sampling_meth, addit.count = input$prm_comb_num, prm.ranges.name = input$prm_ranges_select)
     if(input$sampling_meth == "unif_grid"){
-      prm.combinations$DF <- data.frame(pkey = temp.pkey$pkey, temp.DF, stringsAsFactors = F)
+      prm.combinations$DF <- data.frame(pkey = temp.pkey$pkey, temp.DF$prm.combs, stringsAsFactors = F)
       prm.combinations$method = input$sampling_meth
       names(prm.combinations$DF)[-1] = prm.ranges$DF$names
       prm.combinations$prm.ranges.name <- input$prm_ranges_select
@@ -564,13 +568,13 @@ server <- function(input, output, session) {
   #   }
   # })
   #
-  shinyFileSave(input, "save_prm_combs", roots = c("root"= "~/", "cwd" = getwd()))
+  shinyFiles::shinyFileSave(input, "save_prm_combs", roots = c("root"= "~/", "cwd" = getwd()))
   observe({
     # if(!is.null(prm.combinations$DF)){
     #
     # }
    # print(input$save_prm_combs)
-    file.info = parseSavePath(c("roots"= "~/"), input$save_prm_combs)
+    file.info = shinyFiles::parseSavePath(c("roots"= "~/"), input$save_prm_combs)
     #print(file.info)
     if(nrow(file.info) > 0){
       if(file.info$type == "text"){
@@ -770,11 +774,11 @@ server <- function(input, output, session) {
 
   output$prm_space_selected_tab_ui <- renderUI({
     if(!is.null(input$load_prm_ranges) && is.null(input$load_init_prm_combs) && is.null(prm.combs.selected$DF)){
-      tabBox(id = "prm_space_selected", selected = NULL, width = 12,
+      shinydashboard::tabBox(id = "prm_space_selected", selected = NULL, width = 12,
                 tabPanel(title = "Parameter ranges", value = "tab_prm_ranges_select",
                          uiOutput("add_prm_num_ui"),
                          fluidRow(
-                           column(6,rHandsontableOutput("parameter_ranges_add")
+                           column(6,rhandsontable::rHandsontableOutput("parameter_ranges_add")
                            ),
                            column(3,h5("Log scale"),
                                   actionButton("add_sel_desel_all", label = "Select/Deselect All"))
@@ -789,11 +793,11 @@ server <- function(input, output, session) {
              )
     }else if(!is.null(input$load_prm_ranges) && !is.null(input$load_init_prm_combs) && is.null(prm.combs.selected$DF)){
       if(init.prm.combs$DF[["method"]] == "unif_grid") {
-        tabBox(id = "prm_space_selected", selected = NULL, width = 12,
+        shinydashboard::tabBox(id = "prm_space_selected", selected = NULL, width = 12,
                tabPanel(title = "Parameter ranges", value = "tab_prm_ranges_select",
                         uiOutput("add_prm_num_ui"),
                         fluidRow(
-                          column(6,rHandsontableOutput("parameter_ranges_add")
+                          column(6,rhandsontable::rHandsontableOutput("parameter_ranges_add")
                           ),
                           column(3,h5("Log scale"),
                                  actionButton("add_sel_desel_all", label = "Select/Deselect All"))
@@ -813,11 +817,11 @@ server <- function(input, output, session) {
                )
         )
       }else{
-        tabBox(id = "prm_space_selected", selected = NULL, width = 12,
+        shinydashboard::tabBox(id = "prm_space_selected", selected = NULL, width = 12,
                tabPanel(title = "Parameter ranges", value = "tab_prm_ranges_select",
                         uiOutput("add_prm_num_ui"),
                         fluidRow(
-                          column(6,rHandsontableOutput("parameter_ranges_add")
+                          column(6,rhandsontable::rHandsontableOutput("parameter_ranges_add")
                           ),
                           column(3,h5("Log scale"),
                                  actionButton("add_sel_desel_all", label = "Select/Deselect All"))
@@ -837,11 +841,11 @@ server <- function(input, output, session) {
 
     }else if(!is.null(input$load_prm_ranges) && !is.null(input$load_init_prm_combs) && !is.null(prm.combs.selected$DF)){
       if(init.prm.combs$DF[["method"]] == "unif_grid") {
-        tabBox(id = "prm_space_selected", selected = NULL, width = 12,
+        shinydashboard::tabBox(id = "prm_space_selected", selected = NULL, width = 12,
                tabPanel(title = "Parameter ranges", value = "tab_prm_ranges_select",
                         uiOutput("add_prm_num_ui"),
                         fluidRow(
-                          column(6,rHandsontableOutput("parameter_ranges_add")
+                          column(6,rhandsontable::rHandsontableOutput("parameter_ranges_add")
                           ),
                           column(3,h5("Log scale"),
                                  actionButton("add_sel_desel_all", label = "Select/Deselect All"))
@@ -864,11 +868,11 @@ server <- function(input, output, session) {
                )
         )
       }else{
-        tabBox(id = "prm_space_selected", selected = NULL, width = 12,
+        shinydashboard::tabBox(id = "prm_space_selected", selected = NULL, width = 12,
                tabPanel(title = "Parameter ranges", value = "tab_prm_ranges_select",
                         uiOutput("add_prm_num_ui"),
                         fluidRow(
-                          column(6,rHandsontableOutput("parameter_ranges_add")
+                          column(6,rhandsontable::rHandsontableOutput("parameter_ranges_add")
                           ),
                           column(3,h5("Log scale"),
                                  actionButton("add_sel_desel_all", label = "Select/Deselect All"))
@@ -945,19 +949,22 @@ server <- function(input, output, session) {
 
 
   #display of parameter ranges
-  output$parameter_ranges_add <- renderRHandsontable({
+  output$parameter_ranges_add <- rhandsontable::renderRHandsontable({
     input$add_reset
     if(!is.null(prm.ranges.add$DF)){
-      DF <- prm.ranges.add$DF
-      ncol.temp = ncol(DF)
+      df <- prm.ranges.add$DF
+      ncol.temp = ncol(df)
       isolate({
         if(ncol.temp == length(c("names", "min", "max"))){
-          rhandsontable(DF, digit = 10, contextMenu = FALSE )   %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+          #rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )   %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+          func_rhandsontable_prm_ranges_add1(df)
         }else if(!is.null(input$load_init_prm_combs)){ #if(!is.null(init.prm.combs$DF)){
             if(init.prm.combs$DF$method == "unif_grid"){
-              rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max","frac.range"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+              #rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max","frac.range"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+              func_rhandsontable_prm_ranges_add2(df, ncol.temp)
             } else {
-              rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max","frac.range"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+              func_rhandsontable_prm_ranges_add3(df)
+              #rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max","frac.range"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
             }
         }
       })
@@ -966,7 +973,7 @@ server <- function(input, output, session) {
 
   #setting for log scale
   observeEvent(input$add_sel_desel_all, {
-    prm.ranges.add$DF <- hot_to_r(input$parameter_ranges_add)
+    prm.ranges.add$DF <- rhandsontable::hot_to_r(input$parameter_ranges_add)
     if(all.equal(prm.ranges.add$DF[["log.scale"]], rep(TRUE, nrow(prm.ranges.add$DF))) != TRUE){
       prm.ranges.add$DF["log.scale"] = TRUE
     }else{
@@ -1035,16 +1042,16 @@ server <- function(input, output, session) {
   ##Saving again without changing file path does not work.
   observe({
     volumes = c("root"= "~/", "cwd" = getwd())
-    shinyFileSave(input, "add_save", roots = volumes)
+    shinyFiles::shinyFileSave(input, "add_save", roots = volumes)
     #print(input$add_save)
-    file.info = parseSavePath(volumes, input$add_save)
+    file.info = shinyFiles::parseSavePath(volumes, input$add_save)
     # print(file.info)
     if(nrow(file.info) > 0){
       if(file.info$type == "text"){
-        isolate({prm.ranges.add$DF <- hot_to_r(input$parameter_ranges_add)
+        isolate({prm.ranges.add$DF <- rhandsontable::hot_to_r(input$parameter_ranges_add)
         write.table(prm.ranges.add$DF[,c("names", "min", "max")],file = as.character(file.info$datapath) ,quote = FALSE, col.names = TRUE, row.names = FALSE)})
       }else if (file.info$type == "csv"){
-        isolate({prm.ranges.add$DF <- hot_to_r(input$parameter_ranges_add)
+        isolate({prm.ranges.add$DF <- rhandsontable::hot_to_r(input$parameter_ranges_add)
         write.csv(prm.ranges.add$DF[,c("names", "min", "max")],file = as.character(file.info$datapath) ,quote = FALSE, row.names = FALSE)})
       }
     }
@@ -1078,7 +1085,7 @@ server <- function(input, output, session) {
       ##2.1.generate subranges
       temp.DF <- list()
       #addit.prm.combs$DF <- NULL
-      prm.ranges.add$DF <-  hot_to_r(input$parameter_ranges_add)
+      prm.ranges.add$DF <-  rhandsontable::hot_to_r(input$parameter_ranges_add)
       if(input$add_sampling_meth != "unif_grid"){
         prm.grids.add$DF = NULL
       }
@@ -1147,13 +1154,13 @@ server <- function(input, output, session) {
   #   }
   # })
   #
-  shinyFileSave(input, "save_prm_combs_zoomin", roots = c("roots"= "~/"))
+  shinyFiles::shinyFileSave(input, "save_prm_combs_zoomin", roots = c("roots"= "~/"))
   observe({
     # if(!is.null(prm.combinations.add$DF)){
     #
     # }
     # print(input$save_prm_combs_zoomin)
-    file.info = parseSavePath(c("roots"= "~/"), input$save_prm_combs_zoomin)
+    file.info = shinyFiles::parseSavePath(c("roots"= "~/"), input$save_prm_combs_zoomin)
     # print(file.info)
     if(nrow(file.info) > 0){
       if(file.info$type == "text"){
@@ -1790,7 +1797,7 @@ server <- function(input, output, session) {
 
   output$filter_class_ui <- renderUI({
     if(input$ml_model_mode == "reg"){
-      tabBox(id = "filter_class_tab", selected = NULL, width = 12,
+      shinydashboard::tabBox(id = "filter_class_tab", selected = NULL, width = 12,
              tabPanel(title = "Filtering Condition", value = "filter_cond_select",
                       h4("Filtering condition"),
                       actionButton("add_condition","+"),
@@ -1822,7 +1829,7 @@ server <- function(input, output, session) {
       temp.max = max(phenotype.values.selected.ml$DF[,2],na.rm = T)
       temp.min = min(phenotype.values.selected.ml$DF[,2],na.rm = T)
 
-      tabBox(id = "filter_class_tab", selected = NULL, width = 12,
+      shinydashboard::tabBox(id = "filter_class_tab", selected = NULL, width = 12,
              tabPanel(title = "Define classes of phenotype", value = "def_class",
                       sliderInput(inputId = "phen_range_class_bound_ml",
                                   label = h5(paste0("Adjust class boundary of ",input$load_phenotype_ml, ".")),
@@ -3178,7 +3185,7 @@ server <- function(input, output, session) {
       if(input$further_info_ml_model_button[[1]]%%2 == 0  ){
         return()
       }else{
-        tabBox(id = "selection_ml_phase_exp", selected = NULL, width = 12, #type = "pills",
+        shinydashboard::tabBox(id = "selection_ml_phase_exp", selected = NULL, width = 12, #type = "pills",
                tabPanel("Info of trained ML model", value = "tab_info_ml",
                         column(4,
                                plotOutput("performance_phase_exp")
@@ -3627,7 +3634,7 @@ server <- function(input, output, session) {
 
   })
 
-  output$perturb_plot_3d <- renderRglwidget({
+  output$perturb_plot_3d <- rgl::renderRglwidget({
 
     input$plot_gen
     isolate({if( !is.null(ml.model.selected$ml.model) && input$plot_type == "3D"){
@@ -4055,7 +4062,7 @@ server <- function(input, output, session) {
   })
 
 
-  output$val_plot_pred_3d <- renderRglwidget({
+  output$val_plot_pred_3d <- rgl::renderRglwidget({
     input$gen_val_plots
     #since rf models were trained without kYp, dYp, n, K
     isolate({if(!is.null( ml.model.selected$ml.model)){
@@ -4086,7 +4093,7 @@ server <- function(input, output, session) {
 
   })
 
-  output$val_plot_sim_3d <- renderRglwidget({
+  output$val_plot_sim_3d <- rgl::renderRglwidget({
     input$gen_val_plots
     isolate({if(!is.null( ml.model.selected$ml.model)){
       try(rgl.close(), silent = TRUE)
