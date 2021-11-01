@@ -2308,7 +2308,7 @@ server <- function(input, output, session) {
 
   output$varImp <- renderPlot({
     if(!is.null(ml.model.trained$ml.model)){
-      varImpPlot(ml.model.trained$ml.model,  main = paste0(ml.model.trained$name,": Global Variable Importance"), scale = F)
+      randomForest::varImpPlot(ml.model.trained$ml.model,  main = paste0(ml.model.trained$name,": Global Variable Importance"), scale = F)
     }
   })
 
@@ -2408,19 +2408,19 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.trained$ml.model) & is.null( ml.model.trained$ml.model.res) ){
       df <- data.frame(x = ml.model.trained$ml.model$y, y = ml.model.trained$ml.model$predicted )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted ,use = "complete.obs"), 3)))+ggplot2:: theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2:: ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & !is.null( ml.model.trained$ml.model.res) & input$plot_bias_corr == FALSE){
       df <- data.frame(x = ml.model.trained$ml.model$y, y = ml.model.trained$ml.model$predicted )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & input$plot_bias_corr == TRUE){
       df <- data.frame(x = ml.model.trained$ml.model$y, y = ml.model.trained$ml.model$predicted -ml.model.trained$ml.model.res$predicted)
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted -ml.model.trained$ml.model.res$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2:: ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
@@ -2506,19 +2506,19 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.trained$ml.model) & is.null( ml.model.trained$ml.model.res) ){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.trained$ml.model,prm.sets.test.rescaled[,-1]))
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("Test set Pred VS Sim: corr = ", signif(cor( df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & !is.null( ml.model.trained$ml.model.res) & input$plot_bias_corr == FALSE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.trained$ml.model,prm.sets.test.rescaled[,-1]) )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor( df$x, df$y ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & input$plot_bias_corr == TRUE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.trained$ml.model,prm.sets.test.rescaled[,-1]) -  predict(ml.model.trained$ml.model.res,prm.sets.test.rescaled[,-1]) )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor(df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
@@ -2924,7 +2924,7 @@ server <- function(input, output, session) {
       if(isolate(input$load_phenotype) == "None"){
         ggdata <<- data.frame(prm.sets.selected$tsne, stringsAsFactors = F)
         names(ggdata) <<- c("pkey", "tSNE1","tSNE2")
-        p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2"))#, color = input$load_phenotype))
+        p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2"))#, color = input$load_phenotype))
         p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha, color = "black") +# +scale_colour_gradient2(low="blue", high="red", midpoint = 0.4) + #labs(title =paste0( "tsne for original data"))  +
           ggplot2::xlim(-30,30) +ggplot2::ylim(-30,30) +
           ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
@@ -3000,7 +3000,7 @@ server <- function(input, output, session) {
 
         input$show_clusters_phase_exp
         if(isolate(is.null(hclust$locImp.row.cut))){
-          p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
+          p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
           p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) +ggplot2::scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
             #xlim(-30,30) +ylim(-30,30) +
             ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
@@ -3008,7 +3008,7 @@ server <- function(input, output, session) {
           p1
         }else{
           if(!input$show_clusters_phase_exp){
-            p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
+            p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
             p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) +ggplot2::scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
               #xlim(-30,30) +ylim(-30,30) +
               ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
@@ -3025,7 +3025,7 @@ server <- function(input, output, session) {
             ggdata <<- ggdata[ggdata$cluster %in% input$cluster_select_input ,]
             color.gradient = colorRampPalette(c("blue", "green","yellow","red"))
 
-            p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = "cluster"))
+            p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2", color = "cluster"))
             p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) + ggplot2::scale_colour_manual(values =color.gradient(isolate(input$num_clust))[as.numeric(input$cluster_select_input)[order(as.numeric(input$cluster_select_input))]] )+ #labs(title =paste0( "PNP t_SNE plot with var imp clusters")) + #labs(title =paste0( "tsne for original data"))  +
               #xlim(-30,30) +ylim(-30,30) +
               ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
@@ -3239,7 +3239,7 @@ server <- function(input, output, session) {
 
   output$varImp_phase_exp <- renderPlot({
     if(!is.null(ml.model.selected$ml.model)){
-      varImpPlot(ml.model.selected$ml.model,  main = paste0(ml.model.selected$name,": Global Variable Importance"), scale = F)
+      randomForest::varImpPlot(ml.model.selected$ml.model,  main = paste0(ml.model.selected$name,": Global Variable Importance"), scale = F)
     }
   })
 
@@ -3335,19 +3335,19 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.selected$ml.model) & is.null( ml.model.selected$ml.model.res) ){
       df <- data.frame(x = ml.model.selected$ml.model$y, y = ml.model.selected$ml.model$predicted )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() +ggplot2:: xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & !is.null( ml.model.selected$ml.model.res) & input$plot_bias_corr_phase_exp == FALSE){
       df <- data.frame(x = ml.model.selected$ml.model$y, y = ml.model.selected$ml.model$predicted )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & input$plot_bias_corr_phase_exp == TRUE){
       df <- data.frame(x = ml.model.selected$ml.model$y, y = ml.model.selected$ml.model$predicted -ml.model.selected$ml.model.res$predicted)
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted -ml.model.selected$ml.model.res$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
@@ -3438,19 +3438,19 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.selected$ml.model) & is.null( ml.model.selected$ml.model.res) ){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.selected$ml.model,prm.sets.test.rescaled[,-1]))
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("Test set Pred VS Sim: corr = ", signif(cor( df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & !is.null( ml.model.selected$ml.model.res) & input$plot_bias_corr_phase_exp == FALSE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.selected$ml.model,prm.sets.test.rescaled[,-1]) )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor( df$x, df$y ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & input$plot_bias_corr_phase_exp == TRUE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.selected$ml.model,prm.sets.test.rescaled[,-1]) -  predict(ml.model.selected$ml.model.res,prm.sets.test.rescaled[,-1]) )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor(df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
@@ -3487,12 +3487,12 @@ server <- function(input, output, session) {
 
       if(ml.model.selected$mode == "reg" | ml.model.selected$mode == "regression"){
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$X.IncMSE)])
-        p1 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$X.IncMSE, decreasing = T),], aes(x =names , y =  X.IncMSE))
+        p1 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$X.IncMSE, decreasing = T),], ggplot2::aes(x =names , y =  X.IncMSE))
         p1 = p1+ggplot2::geom_point(size = 2, color= "black", stat = "identity") + ggplot2::xlab("") + ggplot2::ylab("")+ ggplot2::labs(title =paste0( "Permutation")) +
           ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }else{
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$MeanDecreaseAccuracy)])
-        p1 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseAccuracy, decreasing = T),], aes(x =names , y =  MeanDecreaseAccuracy))
+        p1 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseAccuracy, decreasing = T),], ggplot2::aes(x =names , y =  MeanDecreaseAccuracy))
         p1 = p1+ggplot2::geom_point(size = 2, color= "black", stat = "identity") + ggplot2::xlab("") + ggplot2::ylab("")+ ggplot2::labs(title =paste0( "Permutation")) +
           ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }
@@ -3500,12 +3500,12 @@ server <- function(input, output, session) {
       ggdata.imp = data.frame( imp)
       if(ml.model.selected$mode == "reg" | ml.model.selected$mode == "regression"){
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$IncNodePurity)])
-        p2 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$IncNodePurity, decreasing = T),], aes(x =names , y =IncNodePurity ))
+        p2 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$IncNodePurity, decreasing = T),], ggplot2::aes(x =names , y =IncNodePurity ))
         p2 = p2+ ggplot2::geom_point(size = 2, color= "black", stat = "identity")+ ggplot2::xlab("") + ggplot2::ylab("") + ggplot2::labs(title =paste0( "Gini")) +
           ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }else{
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$MeanDecreaseGini)])
-        p2 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseGini, decreasing = T),], aes(x =names , y = MeanDecreaseGini ))
+        p2 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseGini, decreasing = T),], ggplot2::aes(x =names , y = MeanDecreaseGini ))
         p2 = p2+ggplot2::geom_point(size = 2, color= "black", stat = "identity")+ ggplot2::xlab("") + ggplot2::ylab("") + ggplot2::labs(title =paste0( "Gini")) +
           ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }
@@ -3525,7 +3525,7 @@ server <- function(input, output, session) {
         ggdata.imp$names = colnames(local.importance$DF)[-1]
         ggdata.imp = ggdata.imp[order(ggdata.imp$imp),]
         ggdata.imp$names = factor(ggdata.imp$names, levels=ggdata.imp$names)
-        p1 = ggplot2::ggplot(data=ggdata.imp, aes(x =names , y =  imp))
+        p1 = ggplot2::ggplot(data=ggdata.imp, ggplot2::aes(x =names , y =  imp))
         p1 = p1+ggplot2::geom_point(size = 2, color= "black", stat = "identity") + ggplot2::xlab("Parameters") + ggplot2::ylab("Avg. increase in squared OOB residuals")+ ggplot2::labs(title = selected$pkey) +
           ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) + ggplot2::coord_flip()
         p1
@@ -4118,7 +4118,7 @@ server <- function(input, output, session) {
     input$gen_val_plots
     isolate({if(!is.null( ml.model.selected$ml.model)){
       df <- data.frame(x = prms.combs.val.sim$simulated, y = prms.combs.val.sim$pred )
-      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+      g = ggplot2::ggplot(df,ggplot2::aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
         ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(input$plot_range_val[1],input$plot_range_val[2]) +ggplot2::ylim(input$plot_range_val[1],input$plot_range_val[2]) + ggplot2::ggtitle(paste0("Pred VS Sim for ", prms.combs.val.sim$perturbed_prm1," and ", prms.combs.val.sim$perturbed_prm2, ": corr = ", signif(cor( prms.combs.val.sim$simulated, prms.combs.val.sim$pred,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2:: ylab("Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
         ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
@@ -4209,12 +4209,12 @@ server <- function(input, output, session) {
             if(!input$hclust_prms_col_dendr){
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"),  RowSideColors=temp.hclust.prms.row.col )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"),  RowSideColors=temp.hclust.prms.row.col )
               })
             }else{
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun,  trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"), RowSideColors=temp.hclust.prms.row.col )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"), RowSideColors=temp.hclust.prms.row.col )
               })
             }
 
@@ -4223,12 +4223,12 @@ server <- function(input, output, session) {
             if(!input$hclust_prms_col_dendr){
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
               })
             }else{
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun,  trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
               })
             }
           }
@@ -4236,12 +4236,12 @@ server <- function(input, output, session) {
           if(!input$hclust_prms_col_dendr){
             isolate({
               #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-              heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+              gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
             })
           }else{
             isolate({
               #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun,  trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-              heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+              gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
             })
           }
         }
@@ -4306,18 +4306,18 @@ server <- function(input, output, session) {
           if(!is.null(hclust$locImp.row.cut)){##with clusters
             if(!input$hclust_locImp_col_dendr){
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") ,  RowSideColors=hclust$locImp.row.cut.color)
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") ,  RowSideColors=hclust$locImp.row.cut.color)
             }else{
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), RowSideColors=hclust$locImp.row.cut.color )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), RowSideColors=hclust$locImp.row.cut.color )
             }
           }else{
             if(!input$hclust_locImp_col_dendr){
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
             }else{
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
             }
 
           }
