@@ -564,17 +564,17 @@ colfunc<-grDevices::colorRampPalette(c("royalblue","springgreen","yellow","red")
 
 ##server 359
 
-func_rhandsontable_prm_ranges <- function(DF, option, ncol.temp = NULL){
+func_rhandsontable_prm_ranges <- function(df, option, ncol.temp = NULL){
   if(option == "unif_grid"){
-    rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% rhandsontable::hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+    rhandsontable::rhandsontable(df, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% rhandsontable::hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
   }else {
-    rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
+    rhandsontable::rhandsontable(df, digit = 10, contextMenu = FALSE )  %>% rhandsontable::hot_col(col = "log.scale", type = "checkbox") %>% rhandsontable::hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
 
   }
 }
 ## server 453
-func_rhandsontable_prm_grids <- function(DF, ncol.temp = NULL){
-  rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )   %>% rhandsontable::hot_col(col = c(2:ncol.temp),renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
+func_rhandsontable_prm_grids <- function(df, ncol.temp = NULL){
+  rhandsontable::rhandsontable(df, digit = 10, contextMenu = FALSE )   %>% rhandsontable::hot_col(col = c(2:ncol.temp),renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
 
 }
 

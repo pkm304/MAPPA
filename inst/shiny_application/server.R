@@ -351,16 +351,16 @@ server <- function(input, output, session) {
   #display of parameter ranges
   output$parameter_ranges <- rhandsontable::renderRHandsontable({
     input$reset
-    DF <- prm.ranges$DF
+    df <- prm.ranges$DF
     # print(DF)
-    ncol.temp = ncol(DF)
+    ncol.temp = ncol(df)
     isolate({
       if(input$sampling_meth == "unif_grid"){
         #rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))  %>% hot_col(col = ncol.temp,renderer=htmlwidgets::JS("safeHtmlRenderer")) ## to show all digits
-        func_rhandsontable_prm_ranges(DF, option = input$sampling_meth, ncol.temp)
+        MAPPA::func_rhandsontable_prm_ranges(df, option = input$sampling_meth, ncol.temp)
       } else {
         #rhandsontable::rhandsontable(DF, digit = 10, contextMenu = FALSE )  %>% hot_col(col = "log.scale", type = "checkbox") %>% hot_col(col = c("min","max"),renderer=htmlwidgets::JS("safeHtmlRenderer"))
-        func_rhandsontable_prm_ranges(DF, option = input$sampling_meth)
+        MAPPA::func_rhandsontable_prm_ranges(df, option = input$sampling_meth)
       }
     })
   })
@@ -410,7 +410,7 @@ server <- function(input, output, session) {
   ##add to PPM##
   observeEvent(input$prm_ranges_save2ps,{
     if(!is.null(input$prm_ranges_name)){
-      prm.ranges$DF <-  hot_to_r(input$parameter_ranges)
+      prm.ranges$DF <-  rhandsontable::hot_to_r(input$parameter_ranges)
       add.prm.ranges(PPM$object) <- list(prm.ranges =prm.ranges$DF[,c("names", "min", "max")], name = input$prm_ranges_name )
       #add.prm.ranges(PPM$object, prm.ranges$DF[,c("names", "min", "max")], input$prm_ranges_name)
     }
@@ -786,7 +786,7 @@ server <- function(input, output, session) {
                            ),
                          br(),
                          fluidRow(
-                           column(3, shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
+                           column(3, shinyFiles::shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
                            #column(3, uiOutput("add_prm_grid_gen"))
                            )
                          )
@@ -805,7 +805,7 @@ server <- function(input, output, session) {
                         ),
                         br(),
                         fluidRow(
-                          column(3, shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
+                          column(3, shinyFiles::shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
                           #column(3, uiOutput("add_prm_grid_gen"))
                         )
                ),
@@ -829,7 +829,7 @@ server <- function(input, output, session) {
                         ),
                         br(),
                         fluidRow(
-                          column(3, shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
+                          column(3, shinyFiles::shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
                           #column(3, uiOutput("add_prm_grid_gen"))
                         )
                ),
@@ -853,7 +853,7 @@ server <- function(input, output, session) {
                         ),
                         br(),
                         fluidRow(
-                          column(3, shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
+                          column(3, shinyFiles::shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
                           #column(3, uiOutput("add_prm_grid_gen"))
                         )
                ),
@@ -880,7 +880,7 @@ server <- function(input, output, session) {
                         ),
                         br(),
                         fluidRow(
-                          column(3, shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
+                          column(3, shinyFiles::shinySaveButton("add_save", "Save parameter ranges", "Save parameter ranges as ...", filetype=list(text="txt", csv = "csv")))
                           #column(3, uiOutput("add_prm_grid_gen"))
                         )
                ),
@@ -1517,7 +1517,7 @@ server <- function(input, output, session) {
 
     ##regression
     if(input$ml_model_mode == "reg"){
-      ml.models.new$models[[input$ml_model_name]]$ml.model<- randomForest(temp.train.input,phenotype.values.selected.ml$DF[temp.idx.train ,input$load_phenotype_ml],
+      ml.models.new$models[[input$ml_model_name]]$ml.model<- randomForest::randomForest(temp.train.input,phenotype.values.selected.ml$DF[temp.idx.train ,input$load_phenotype_ml],
                                                                           keep.inbag = TRUE,
                                                                           importance = TRUE,
                                                                           ntree =  500,
@@ -1526,7 +1526,7 @@ server <- function(input, output, session) {
       )
       if(input$ml_model_mode == "reg" & input$bias_corr == "Yes"){
         #ml.model.trained$ml.model.res
-        ml.models.new$models[[input$ml_model_name]]$ml.model.res  <- randomForest(temp.train.input,  ml.models.new$models[[input$ml_model_name]]$ml.model$predicted - phenotype.values.selected.ml$DF[temp.idx.train ,input$load_phenotype_ml],
+        ml.models.new$models[[input$ml_model_name]]$ml.model.res  <- randomForest::randomForest(temp.train.input,  ml.models.new$models[[input$ml_model_name]]$ml.model$predicted - phenotype.values.selected.ml$DF[temp.idx.train ,input$load_phenotype_ml],
                                                                                   keep.inbag = TRUE,
                                                                                   importance = TRUE,
                                                                                   ntree =  500,
@@ -1536,7 +1536,7 @@ server <- function(input, output, session) {
     }else if(input$ml_model_mode == "class"){
       if(input$balanced == "Yes"){
         temp.min <- min(table(phenotype.values.selected.ml$DF.class[temp.idx.train ,input$load_phenotype_ml]))
-        ml.models.new$models[[input$ml_model_name]]$ml.model<- randomForest(temp.train.input,phenotype.values.selected.ml$DF.class[temp.idx.train ,input$load_phenotype_ml],
+        ml.models.new$models[[input$ml_model_name]]$ml.model<- randomForest::randomForest(temp.train.input,phenotype.values.selected.ml$DF.class[temp.idx.train ,input$load_phenotype_ml],
                                                                             keep.inbag = TRUE,
                                                                             importance = TRUE,
                                                                             ntree =  500,
@@ -1544,7 +1544,7 @@ server <- function(input, output, session) {
                                                                             sampsize = c(temp.min , temp.min )
         )
       }else{
-        ml.models.new$models[[input$ml_model_name]]$ml.model<- randomForest(temp.train.input,phenotype.values.selected.ml$DF.class[temp.idx.train ,input$load_phenotype_ml],
+        ml.models.new$models[[input$ml_model_name]]$ml.model<- randomForest::randomForest(temp.train.input,phenotype.values.selected.ml$DF.class[temp.idx.train ,input$load_phenotype_ml],
                                                                             keep.inbag = TRUE,
                                                                             importance = TRUE,
                                                                             ntree =  500,
@@ -2408,21 +2408,21 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.trained$ml.model) & is.null( ml.model.trained$ml.model.res) ){
       df <- data.frame(x = ml.model.trained$ml.model$y, y = ml.model.trained$ml.model$predicted )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted ,use = "complete.obs"), 3)))+ggplot2:: theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2:: ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & !is.null( ml.model.trained$ml.model.res) & input$plot_bias_corr == FALSE){
       df <- data.frame(x = ml.model.trained$ml.model$y, y = ml.model.trained$ml.model$predicted )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & input$plot_bias_corr == TRUE){
       df <- data.frame(x = ml.model.trained$ml.model$y, y = ml.model.trained$ml.model$predicted -ml.model.trained$ml.model.res$predicted)
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted -ml.model.trained$ml.model.res$predicted ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.trained$ml.model$y, ml.model.trained$ml.model$predicted -ml.model.trained$ml.model.res$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2:: ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }
   })
@@ -2506,21 +2506,21 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.trained$ml.model) & is.null( ml.model.trained$ml.model.res) ){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.trained$ml.model,prm.sets.test.rescaled[,-1]))
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggtitle(paste0("Test set Pred VS Sim: corr = ", signif(cor( df$x, df$y,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("Test set Pred VS Sim: corr = ", signif(cor( df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & !is.null( ml.model.trained$ml.model.res) & input$plot_bias_corr == FALSE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.trained$ml.model,prm.sets.test.rescaled[,-1]) )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggtitle(paste0("Test set VS Sim: corr = ", signif(cor( df$x, df$y ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor( df$x, df$y ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.trained$ml.model) & input$plot_bias_corr == TRUE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.trained$ml.model,prm.sets.test.rescaled[,-1]) -  predict(ml.model.trained$ml.model.res,prm.sets.test.rescaled[,-1]) )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggtitle(paste0("Test set VS Sim: corr = ", signif(cor(df$x, df$y,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) +ggplot2::ylim(min(ml.model.trained$ml.model$y),max(ml.model.trained$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor(df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }
   })
@@ -2924,11 +2924,11 @@ server <- function(input, output, session) {
       if(isolate(input$load_phenotype) == "None"){
         ggdata <<- data.frame(prm.sets.selected$tsne, stringsAsFactors = F)
         names(ggdata) <<- c("pkey", "tSNE1","tSNE2")
-        p1 = ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2"))#, color = input$load_phenotype))
-        p1 = p1+geom_point(size = input$point.size, alpha = input$point.alpha, color = "black") +# +scale_colour_gradient2(low="blue", high="red", midpoint = 0.4) + #labs(title =paste0( "tsne for original data"))  +
-          xlim(-30,30) +ylim(-30,30) +
-          coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
-          theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+        p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2"))#, color = input$load_phenotype))
+        p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha, color = "black") +# +scale_colour_gradient2(low="blue", high="red", midpoint = 0.4) + #labs(title =paste0( "tsne for original data"))  +
+          ggplot2::xlim(-30,30) +ggplot2::ylim(-30,30) +
+          ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+          ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
         p1
 
       } else {
@@ -3000,19 +3000,19 @@ server <- function(input, output, session) {
 
         input$show_clusters_phase_exp
         if(isolate(is.null(hclust$locImp.row.cut))){
-          p1 = ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
-          p1 = p1+geom_point(size = input$point.size, alpha = input$point.alpha) +scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
+          p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
+          p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) +ggplot2::scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
             #xlim(-30,30) +ylim(-30,30) +
-            coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
-            theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+            ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+            ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
           p1
         }else{
           if(!input$show_clusters_phase_exp){
-            p1 = ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
-            p1 = p1+geom_point(size = input$point.size, alpha = input$point.alpha) +scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
+            p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
+            p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) +ggplot2::scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
               #xlim(-30,30) +ylim(-30,30) +
-              coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
-              theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+              ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+              ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
             p1
           }else{
 
@@ -3025,11 +3025,11 @@ server <- function(input, output, session) {
             ggdata <<- ggdata[ggdata$cluster %in% input$cluster_select_input ,]
             color.gradient = colorRampPalette(c("blue", "green","yellow","red"))
 
-            p1 = ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = "cluster"))
-            p1 = p1+geom_point(size = input$point.size, alpha = input$point.alpha) + scale_colour_manual(values =color.gradient(isolate(input$num_clust))[as.numeric(input$cluster_select_input)[order(as.numeric(input$cluster_select_input))]] )+ #labs(title =paste0( "PNP t_SNE plot with var imp clusters")) + #labs(title =paste0( "tsne for original data"))  +
+            p1 = ggplot2::ggplot(ggdata, aes_string(x = "tSNE1", y = "tSNE2", color = "cluster"))
+            p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) + ggplot2::scale_colour_manual(values =color.gradient(isolate(input$num_clust))[as.numeric(input$cluster_select_input)[order(as.numeric(input$cluster_select_input))]] )+ #labs(title =paste0( "PNP t_SNE plot with var imp clusters")) + #labs(title =paste0( "tsne for original data"))  +
               #xlim(-30,30) +ylim(-30,30) +
-              coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
-              theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+              ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+              ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
             p1
 
           }
@@ -3335,21 +3335,21 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.selected$ml.model) & is.null( ml.model.selected$ml.model.res) ){
       df <- data.frame(x = ml.model.selected$ml.model$y, y = ml.model.selected$ml.model$predicted )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() +ggplot2:: xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & !is.null( ml.model.selected$ml.model.res) & input$plot_bias_corr_phase_exp == FALSE){
       df <- data.frame(x = ml.model.selected$ml.model$y, y = ml.model.selected$ml.model$predicted )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & input$plot_bias_corr_phase_exp == TRUE){
       df <- data.frame(x = ml.model.selected$ml.model$y, y = ml.model.selected$ml.model$predicted -ml.model.selected$ml.model.res$predicted)
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted -ml.model.selected$ml.model.res$predicted ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("OOB Pred VS Sim: corr = ", signif(cor( ml.model.selected$ml.model$y, ml.model.selected$ml.model$predicted -ml.model.selected$ml.model.res$predicted ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("OOB Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }
   })
@@ -3438,21 +3438,21 @@ server <- function(input, output, session) {
       return()
     }else if(!is.null( ml.model.selected$ml.model) & is.null( ml.model.selected$ml.model.res) ){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.selected$ml.model,prm.sets.test.rescaled[,-1]))
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggtitle(paste0("Test set Pred VS Sim: corr = ", signif(cor( df$x, df$y,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("Test set Pred VS Sim: corr = ", signif(cor( df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & !is.null( ml.model.selected$ml.model.res) & input$plot_bias_corr_phase_exp == FALSE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.selected$ml.model,prm.sets.test.rescaled[,-1]) )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggtitle(paste0("Test set VS Sim: corr = ", signif(cor( df$x, df$y ,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor( df$x, df$y ,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }else if(!is.null( ml.model.selected$ml.model) & input$plot_bias_corr_phase_exp == TRUE){
       df <- data.frame(x = phenotype.values.test[,-1], y = predict(ml.model.selected$ml.model,prm.sets.test.rescaled[,-1]) -  predict(ml.model.selected$ml.model.res,prm.sets.test.rescaled[,-1]) )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggtitle(paste0("Test set VS Sim: corr = ", signif(cor(df$x, df$y,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) +ggplot2::ylim(min(ml.model.selected$ml.model$y),max(ml.model.selected$ml.model$y)) + ggplot2::ggtitle(paste0("Test set VS Sim: corr = ", signif(cor(df$x, df$y,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") + ggplot2::ylab("Test Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }
   })
@@ -3482,34 +3482,34 @@ server <- function(input, output, session) {
   library(gridExtra)
   output$global_varImp <- renderPlot({
     if(!is.null( ml.model.selected$ml.model)){
-      imp = importance( ml.model.selected$ml.model, scale = F)
+      imp = randomForest::importance( ml.model.selected$ml.model, scale = F)
       ggdata.imp = data.frame( imp)
 
       if(ml.model.selected$mode == "reg" | ml.model.selected$mode == "regression"){
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$X.IncMSE)])
-        p1 = ggplot(data=ggdata.imp[order(ggdata.imp$X.IncMSE, decreasing = T),], aes(x =names , y =  X.IncMSE))
-        p1 = p1+geom_point(size = 2, color= "black", stat = "identity") + xlab("") + ylab("")+ labs(title =paste0( "Permutation")) +
-          theme_bw() + theme(axis.text=element_text(size=10, face = "bold"), axis.title=element_text(size=10,face="bold")) +coord_flip()
+        p1 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$X.IncMSE, decreasing = T),], aes(x =names , y =  X.IncMSE))
+        p1 = p1+ggplot2::geom_point(size = 2, color= "black", stat = "identity") + ggplot2::xlab("") + ggplot2::ylab("")+ ggplot2::labs(title =paste0( "Permutation")) +
+          ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }else{
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$MeanDecreaseAccuracy)])
-        p1 = ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseAccuracy, decreasing = T),], aes(x =names , y =  MeanDecreaseAccuracy))
-        p1 = p1+geom_point(size = 2, color= "black", stat = "identity") + xlab("") + ylab("")+ labs(title =paste0( "Permutation")) +
-          theme_bw() + theme(axis.text=element_text(size=10, face = "bold"), axis.title=element_text(size=10,face="bold")) +coord_flip()
+        p1 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseAccuracy, decreasing = T),], aes(x =names , y =  MeanDecreaseAccuracy))
+        p1 = p1+ggplot2::geom_point(size = 2, color= "black", stat = "identity") + ggplot2::xlab("") + ggplot2::ylab("")+ ggplot2::labs(title =paste0( "Permutation")) +
+          ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }
 
       ggdata.imp = data.frame( imp)
       if(ml.model.selected$mode == "reg" | ml.model.selected$mode == "regression"){
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$IncNodePurity)])
-        p2 = ggplot(data=ggdata.imp[order(ggdata.imp$IncNodePurity, decreasing = T),], aes(x =names , y =IncNodePurity ))
-        p2 = p2+geom_point(size = 2, color= "black", stat = "identity")+ xlab("") + ylab("") + labs(title =paste0( "Gini")) +
-          theme_bw() + theme(axis.text=element_text(size=10, face = "bold"), axis.title=element_text(size=10,face="bold")) +coord_flip()
+        p2 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$IncNodePurity, decreasing = T),], aes(x =names , y =IncNodePurity ))
+        p2 = p2+ ggplot2::geom_point(size = 2, color= "black", stat = "identity")+ ggplot2::xlab("") + ggplot2::ylab("") + ggplot2::labs(title =paste0( "Gini")) +
+          ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }else{
         ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$MeanDecreaseGini)])
-        p2 = ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseGini, decreasing = T),], aes(x =names , y = MeanDecreaseGini ))
-        p2 = p2+geom_point(size = 2, color= "black", stat = "identity")+ xlab("") + ylab("") + labs(title =paste0( "Gini")) +
-          theme_bw() + theme(axis.text=element_text(size=10, face = "bold"), axis.title=element_text(size=10,face="bold")) +coord_flip()
+        p2 = ggplot2::ggplot(data=ggdata.imp[order(ggdata.imp$MeanDecreaseGini, decreasing = T),], aes(x =names , y = MeanDecreaseGini ))
+        p2 = p2+ggplot2::geom_point(size = 2, color= "black", stat = "identity")+ ggplot2::xlab("") + ggplot2::ylab("") + ggplot2::labs(title =paste0( "Gini")) +
+          ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) +ggplot2::coord_flip()
       }
-      grid.arrange(p1,p2, ncol = 2, nrow =1)
+      gridExtra::grid.arrange(p1,p2, ncol = 2, nrow =1)
     }
 
   })
@@ -3525,9 +3525,9 @@ server <- function(input, output, session) {
         ggdata.imp$names = colnames(local.importance$DF)[-1]
         ggdata.imp = ggdata.imp[order(ggdata.imp$imp),]
         ggdata.imp$names = factor(ggdata.imp$names, levels=ggdata.imp$names)
-        p1 = ggplot(data=ggdata.imp, aes(x =names , y =  imp))
-        p1 = p1+geom_point(size = 2, color= "black", stat = "identity") + xlab("Parameters") + ylab("Avg. increase in squared OOB residuals")+ labs(title = selected$pkey) +
-          theme_bw() + theme(axis.text=element_text(size=10, face = "bold"), axis.title=element_text(size=10,face="bold")) +coord_flip()
+        p1 = ggplot2::ggplot(data=ggdata.imp, aes(x =names , y =  imp))
+        p1 = p1+ggplot2::geom_point(size = 2, color= "black", stat = "identity") + ggplot2::xlab("Parameters") + ggplot2::ylab("Avg. increase in squared OOB residuals")+ ggplot2::labs(title = selected$pkey) +
+          ggplot2::theme_bw() + ggplot2::theme(axis.text=ggplot2::element_text(size=10, face = "bold"), axis.title=ggplot2::element_text(size=10,face="bold")) + ggplot2::coord_flip()
         p1
       }else{
         return(0)
@@ -4118,9 +4118,9 @@ server <- function(input, output, session) {
     input$gen_val_plots
     isolate({if(!is.null( ml.model.selected$ml.model)){
       df <- data.frame(x = prms.combs.val.sim$simulated, y = prms.combs.val.sim$pred )
-      g = ggplot(df,aes(x=x, y=y)) + geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
-        geom_abline(slope = 1,intercept = 0) + xlim(input$plot_range_val[1],input$plot_range_val[2]) +ylim(input$plot_range_val[1],input$plot_range_val[2]) + ggtitle(paste0("Pred VS Sim for ", prms.combs.val.sim$perturbed_prm1," and ", prms.combs.val.sim$perturbed_prm2, ": corr = ", signif(cor( prms.combs.val.sim$simulated, prms.combs.val.sim$pred,use = "complete.obs"), 3)))+ theme_bw() + xlab("Simulated      ") + ylab("Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
-        theme(axis.text=element_text(size=10), axis.title=element_text(size=10))
+      g = ggplot2::ggplot(df,aes(x=x, y=y)) + ggplot2::geom_point(alpha=1, size = 1, color = "black") +# stat_density2d(aes( alpha = ..level..),geom='polygon',colour='yellow', size = 0.05)+
+        ggplot2::geom_abline(slope = 1,intercept = 0) + ggplot2::xlim(input$plot_range_val[1],input$plot_range_val[2]) +ggplot2::ylim(input$plot_range_val[1],input$plot_range_val[2]) + ggplot2::ggtitle(paste0("Pred VS Sim for ", prms.combs.val.sim$perturbed_prm1," and ", prms.combs.val.sim$perturbed_prm2, ": corr = ", signif(cor( prms.combs.val.sim$simulated, prms.combs.val.sim$pred,use = "complete.obs"), 3)))+ ggplot2::theme_bw() + ggplot2::xlab("Simulated      ") +ggplot2:: ylab("Predicted     ") + #+ geom_smooth(method=lm,linetype=2,colour="red",se=F)
+        ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
       g
     }})
   })
