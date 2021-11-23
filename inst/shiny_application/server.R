@@ -1753,7 +1753,7 @@ server <- function(input, output, session) {
         return()
       }else{
         if(!is.null(phenotype.values.selected.ml$DF)){
-          box(width = 12,
+          shinydashboard::box(width = 12,
            column(4,
                      h4("Histogram for a selected phenotype"),
                      sliderInput(inputId = "hist_phen_range_ml",
@@ -2651,10 +2651,10 @@ server <- function(input, output, session) {
         temp.prm.names.init <- get.init.prm.combs.name(object = PPM$object)
         temp.prm.names.addit <- get.addit.prm.combs.name(object = PPM$object)
 
-        tsne_range$x = c(-30,30)
-        tsne_range$y = c(-30,30)
-        #tsne_range$x <- 1.05*range(prm.sets.selected$tsne$tSNE1)
-        #tsne_range$y <- 1.05*range(prm.sets.selected$tsne$tSNE2)
+        #tsne_range$x = c(-30,30)
+        #tsne_range$y = c(-30,30)
+        tsne_range$x <- 1.05*range(prm.sets.selected$tsne$tSNE1)
+        tsne_range$y <- 1.05*range(prm.sets.selected$tsne$tSNE2)
 
         ##to obtain corresponding parameter ranges for selected initial parameter space
         if(any(unlist( temp.prm.names.init) == input$load_parameter_sets[i]) ){
@@ -2926,7 +2926,7 @@ server <- function(input, output, session) {
         names(ggdata) <<- c("pkey", "tSNE1","tSNE2")
         p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2"))#, color = input$load_phenotype))
         p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha, color = "black") +# +scale_colour_gradient2(low="blue", high="red", midpoint = 0.4) + #labs(title =paste0( "tsne for original data"))  +
-          ggplot2::xlim(-30,30) +ggplot2::ylim(-30,30) +
+          ggplot2::xlim(-50,50) +ggplot2::ylim(-50,50) +
           ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
           ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
         p1
@@ -3604,7 +3604,7 @@ server <- function(input, output, session) {
       if(input$plot_type == "2D"){
         return(plotOutput("perturb_plot_2d",height = "450px", width = "450px"))
       } else if(input$plot_type == "3D"){
-        return(rglwidgetOutput("perturb_plot_3d",height = "450px", width = "450px"))
+        return(rgl::rglwidgetOutput("perturb_plot_3d",height = "450px", width = "450px"))
       }
     })
   })
@@ -3652,8 +3652,8 @@ server <- function(input, output, session) {
         names(prm.combs.val.z$prm.comb.selected.rescaled) <-  selected$point$parameter
         names(prm.combs.val.z$prm.comb.selected.original) <-  selected$point$parameter
 
-        scene1<- scene3d()
-        rglwidget(scene1)
+        scene1<- rgl::scene3d()
+        rgl::rglwidget(scene1)
 
       }
     }})
@@ -3815,7 +3815,7 @@ server <- function(input, output, session) {
   #   }
   # })
   #
-  output$prm_combs_val <- renderDataTable({
+  output$prm_combs_val <- DT::renderDataTable({
     input$gen_prm_combs_val
     if(!is.null(prm.combs.val$DF )){
       isolate({
@@ -4021,8 +4021,8 @@ server <- function(input, output, session) {
           )
         }else if(input$plot_type_val == "3D"){
           list(
-            column(4,rglwidgetOutput("val_plot_pred_3d", width = "400px")),
-            column(4,rglwidgetOutput("val_plot_sim_3d", width = "400px")),
+            column(4,rgl::rglwidgetOutput("val_plot_pred_3d", width = "400px")),
+            column(4,rgl::rglwidgetOutput("val_plot_sim_3d", width = "400px")),
             column(4,plotOutput("val_plot_corr", width = "400px"))
           )
         }

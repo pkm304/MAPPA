@@ -313,7 +313,6 @@ func_gen_prm_subranges <- function(prm.comb, prm.ranges, sampling.meth, prm.grid
 
 
 ####phasespace
-
 #### Modified from a code by  http://arxiv.org/abs/1605.09196 under license GLP-2
 vec.plot.bc.mod = function (model1, model2 = NULL, X, i.var, prm.ranges ,grid.lines = 100,
                             zoom = 1, limitY = F, zlim, gap, three.dim = T, posit.class = NULL, pred.type = NULL, cut.off = NULL, moreArgs = list(), ...) {
@@ -603,4 +602,27 @@ helpPopup <- function(content, title = NULL) {
     `data-trigger` = "hover",
     shiny::icon("question-circle")
   )
+}
+
+
+
+## Useful functions based on analyses
+if(0){
+
+  #variable importance
+  imp = importance( ml.model, scale = F)
+
+  ggdata.imp = data.frame( imp)
+  ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$X.IncMSE)])
+  p1 = ggplot(data=ggdata.imp[order(ggdata.imp$X.IncMSE, decreasing = T),], aes(x =names , y =  X.IncMSE))
+  p1 = p1+geom_point(size = 2, color= "black", stat = "identity") + xlab("") + ylab("")+ ylim(min(ggdata.imp$X.IncMSE), max(ggdata.imp$X.IncMSE)) + labs(title =paste0( "Permutation")) +
+    theme_bw() + theme(axis.text=element_text(size=10, face = "bold"), axis.title=element_text(size=10,face="bold")) +coord_flip()
+  p1
+
+  ggdata.imp$names = factor(row.names(imp), levels=row.names(ggdata.imp)[order(ggdata.imp$IncNodePurity)])
+  p2 = ggplot(data=ggdata.imp[order(ggdata.imp$IncNodePurity, decreasing = T),], aes(x =names , y =IncNodePurity ))
+  p2 = p2+geom_point(size = 2, color= "black", stat = "identity")+ xlab("") + ylab("") + ylim(0, max(ggdata.imp$IncNodePurity)) + labs(title =paste0( "Impurity")) +
+    theme_bw() + theme(axis.text=element_text(size=10, face = "bold"), axis.title=element_text(size=10,face="bold")) +coord_flip()
+  p2
+
 }
