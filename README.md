@@ -266,7 +266,7 @@ reactions.
 
 <img src="man/figures/GC_model.png" width="400" />
 
-#### Define a dynamical model and determine parameters to be varied with their associated plausible ranges
+#### Define a dynamical model and determine parameters to be varied with their associated plausible ranges.
 
 First, based on typical parameter values and biological consideration,
 we define a set of parameter ranges by choosing parameters to vary and
@@ -306,7 +306,7 @@ library(MAPPA)
 launch_MAPPA()
 ```
 
-#### Create and save a PPM object
+#### Create and save a PPM object.
 
 <img src="man/figures/create_PPM.png" width="600" />
 
@@ -382,13 +382,13 @@ if(0){ #Do not run for the tutorial since it may takes long.
   prmset.tsne <- data.frame(pkey = prmset$pkey, prmset.tsne$Y)
   names(prmset.tsne) <- c("pkey", "tSNE1", "tSNE2")
 }
-#tSNE was prepared for this tutirial, 
+#Loading precomputed tSNE for this tutirial, 
 prmset.tsne <- readRDS("examples/tSNE_tutorial.Rds")
 
 
 # Register the tSNE embedding to the PPM object
 PPM.obj <- readRDS("examples/PPM_GC_reaction.Rds")
-add.tsne.coord(PPM.obj) <- list( prm.combs.name = "prmset", ##Specify the exact name of the parameter combinations defined in MAPPA
+add.tsne.coord(PPM.obj) <- list( prm.combs.name = "prmset", #Specify the exact name of the parameter combinations defined in MAPPA
                                        tsne.coord = prmset.tsne)
 saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 ```
@@ -398,7 +398,7 @@ saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 Users can conduct simulations for the model across sampled parameter
 combinations with any tools of their preferences. For the GC reaction
 model, we conducted the simulations usmg the Matlab. Here, we showcase
-MAPPA using the simulations results in scheme 2:
+MAPPA using the simulations results in scheme 2 (delayed TFR):
 
 <img src="man/figures/simulation_scheme.png" width="400"/>
 
@@ -418,3 +418,54 @@ df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = TFR, group = pkey), alp
 ```
 
 <img src="man/figures/sim_results.png" width="600"/>
+
+Then, we focused on how long the GC rection persist. Therefore, we
+defined the phenotype of durtation of the GC reaction as area under
+curve of the time trajectory of the total GC B cells divided by the max
+level of the total GC B cells across the time, denoted as `Dur.GC`.
+
+``` r
+# Defining various phenotypes
+library(tidyverse)
+phens_delay_TFR <- df.sim.results %>% group_by(pkey) %>% summarise(max.B_gc = max(B_gc), time.max.B_gc = Time[which.max(B_gc)], min.B_gc = min(B_gc), min.TFR = min(TFR), max.TFR = max(TFR), B_gc.at.1000 = B_gc[length(B_gc)],  min.TFH = min(TFH), max.TFH = max(TFH) )  %>% data.frame()
+phens_delay_TFR <- phens_delay_TFR %>% mutate(B_gc.ratio.1000.max = B_gc.at.1000/max.B_gc)
+
+#Function for trapezoidal integration to obtain area under curve (AUC).
+AUC = function(mat){
+  mat = mat[order(mat[,1]),]
+  N = nrow(mat) - 1
+  mat[is.na(mat)] = 1
+  sum = 0
+  for(i in 1:N){
+    sum = sum + (mat[i,2]+mat[i+1,2])*(mat[i+1,1]-mat[i,1])/2
+  }
+  return(sum)
+}
+
+if(0){# Do not run
+    phens_delay_TFR$AUC.B_gc <- sapply(X = phens_delay_TFR$pkey, function(x){ # takes long
+        mat <- df.sim.results %>% filter(pkey == x) %>% select(Time,B_gc)
+        return(AUC(mat))
+    })
+}
+
+#Load the precomputed result for this tutorial
+phens_delay_TFR$AUC.B_gc <- readRDS("examples/AUC.B_GC_tutorial.Rds")
+phens_delay_TFR$dur.B_gc <- phens_delay_TFR$AUC.B_gc/phens_delay_TFR$max.B_gc
+hist(phens_delay_TFR$dur.B_gc)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+``` r
+# Register the phenotype, Dur.GC to the PPM object
+PPM.obj <- readRDS("examples/PPM_GC_reaction.Rds")
+add.phenotypes(PPM.obj) <-  list(name = "dur.GC_delay_TFR", #Specify the name of the phenotype
+                             prm.combs.name = "prmset",
+                             phenotype = data.frame(pkey = phens_delay_TFR$pkey, #Specify the exact name of the parameter combinations defined in MAPPA
+                                                                         dur.GC_delay_TFR = phens_delay_TFR$dur.B_gc) #Specify the same name of the phenotype
+                            )
+saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
+```
+
+#### (Back to MAPPA) Reload the PPM object and train machine learning (ML) models in a flexible manner.
