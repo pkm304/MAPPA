@@ -568,13 +568,20 @@ server <- function(input, output, session) {
   #   }
   # })
   #
-  shinyFiles::shinyFileSave(input, "save_prm_combs", roots = c("root"= "~/", "cwd" = getwd()))
+  #shinyFiles::shinyFileSave(input, "save_prm_combs", roots = c("root"= "~/", "cwd" = getwd()))
   observe({
     # if(!is.null(prm.combinations$DF)){
     #
     # }
    # print(input$save_prm_combs)
-    file.info = shinyFiles::parseSavePath(c("roots"= "~/"), input$save_prm_combs)
+
+    volumes = c("root"= "~/", "cwd" = getwd())
+    shinyFiles::shinyFileSave(input, "save_prm_combs", roots = volumes)
+    #print(input$add_save)
+    file.info = shinyFiles::parseSavePath(volumes, input$save_prm_combs)
+
+
+    #file.info = shinyFiles::parseSavePath(c("roots"= "~/"), input$save_prm_combs)
     #print(file.info)
     if(nrow(file.info) > 0){
       if(file.info$type == "text"){

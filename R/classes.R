@@ -390,7 +390,7 @@ setReplaceMethod(
     object@prm.space$initial.prm.combs[[value$prm.ranges.name]][[value$name]][["raw.smpl"]] <- value$raw.smpl # data.frame
     object@prm.space$initial.prm.combs[[value$prm.ranges.name]][[value$name]][["prm.combs"]] <- value$prm.combs #data.frame
     object@prm.space$initial.prm.combs[[value$prm.ranges.name]][[value$name]][["prm.combs.z"]] <- value$prm.combs.z #data.frame
-    object@prm.space$initial.prm.combs[[value$prm.ranges.name]][[value$name]][[value$name]][["rd_seed"]] <- value$rd_seed # vector
+    object@prm.space$initial.prm.combs[[value$prm.ranges.name]][[value$name]][["rd_seed"]] <- value$rd_seed # vector
     return(object)
 
   }

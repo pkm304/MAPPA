@@ -122,9 +122,6 @@ pages.
   - Explor PPM
     
     <img src="man/figures/Exp_PPM.png" width="700" />
-    
-    omitted
-    
     <img src="man/figures/Exp_PPM_2.png" width="700" />
 
 ### PPM object
@@ -240,9 +237,9 @@ PPM.obj
 2.  Create a PPM object.
 
 3.  Sample initial parameter combinations uniformly across parameter
-    space defined by the plausible prameter space. Addition sampling can
-    be performed adpatively focusing on certain region of interest later
-    on.
+    space defined by the plausible prameter space. Additional sampling
+    can be performed adpatively focusing on certain region of interest
+    later on.
 
 4.  (Not part of MAPPA) Run simulations for sampled parameter
     combinations and obtain phenotypes of interest out of the simulation
@@ -260,58 +257,188 @@ PPM.obj
 
 ### Example
 
-In this section, we work through MAPPA using an example model from
-<a href ='https://ascpt.onlinelibrary.wiley.com/doi/10.1002/psp4.29'>
-(Tavassoly et al., 2015)</a>, which is a detailed model describing
-interplay between autophagy and apoptosis. Users should use both Shiny
-App and R concole
-interactively.
+In this section, we walk through MAPPA using an example model of the
+germinal center (GC) reaction, which is an ODE model describing the
+interactions of germinal center B cells, T follicular helper cells, and
+T follicular regulatory cells at the cell population level to dissect
+the duration of GC
+reactions.
+
+<img src="man/figures/GC_model.png" width="400" />
 
 #### Define a dynamical model and determine parameters to be varied with their associated plausible ranges
 
-First, we take optimal model parameter values provided by the model
-provided by Tavasolly et
-al.
+First, based on typical parameter values and biological consideration,
+we define a set of parameter ranges by choosing parameters to vary and
+defining their associated rangee as a data frame with columns of `name`,
+`min`, `max`. Save the data frame object in the csv format. Please
+adhere to this format specified for MAPPA.
 
 ``` r
-prms.values.optimum <- c(C=20, BCL2T=3, IP3RT=1, CaT=2, CASP =0, wjnk_s = 1, wdapk_s = 1, 
-                                                 wbcl_j = 1, wmtor_ca = -1, watg_m = -1, wbh_a = 1, wbec_d = 1, Wcp_Ca = 1, 
-                                                 W_ATG5C = -1, ka = 1.77, kda = 0.0948, ksb = 2.08, kc = 0.510, krb = 1.41, 
-                                                 kra = 3.83, Gj = 1.73, Gd = 4.05, Gb = 5.21, Gt = 1.61, Gg = 1.04, Gh = 0.0101, 
-                                                 Gl = 3.43, Ga = 0.5240, Gcp = 1.95, sigmaj = 2.42, sigmad = 1.01, sigmab = 4.57,
-                                                 sigmah = 2.89, sigmag = 20.8, sigmat = 3.51, sigmal = 7.99, sigmacp = 32.3, 
-                                                 sigmaA = 4.83, kcasp = 2.01, kin = 9.64, kout = 6.31, wjnk0 = -1.22, wdapk0 = -2.98,
-                                                 wbcl0 = -0.614, wmtor0 = 0.202, watg0 = 0.144, wbh0 = -1.26, wbec0 = -0.647, 
-                                                 W_ATG50 = 0.215, Wcp_0 = -0.514, wbh_s = 0.0801, wbh_c = 0.0003)
-```
+# Typical parameter values
+prms.typical <- c(K_tfh_blz = 0.1,
+                                    n_tfh_blz = 1,
+                                    r_tfh_0 = 0.7,
+                                    d_tfh_0 = 0.7,
+                                    K_blz_tfh = 1.2,
+                                    n_blz_tfh = 1,
+                                    r_tfr_0 = 0.7,
+                                    d_tfr_0 = 0.7,
+                                    K_blz_tfr = 10,
+                                    n_blz_tfr = 1,
+                                    K_tfr_tfh = 1/5)
 
-Then, based on biological consideration, choose what parameters to vary
-and determine associated ranges to sample from. An example is as below.
-
-``` r
-# Chosen parameters to be varied
-prms.varied <- c("C", "BCL2T", "ka","kda", "ksb", "kc", "krb",
-                                 "kra", "Gj", "Gd", "Gb", "Gt", "Gg", "Gh", "Gl", 
-                                 "Ga", "Gcp", "sigmaj", "sigmad", "sigmab", "sigmah", 
-                                 "sigmag", "sigmat", "sigmal", "sigmacp", "sigmaA", "kcasp", 
-                                 "kin", "kout", "wjnk0", "wdapk0", "wbcl0", "wmtor0", "watg0", 
-                                 "wbh0", "wbec0", "W_ATG50", "Wcp_0", "wbh_s", "wbh_c")
-
-
-# Determine ranges for chosen prms. In this example we set the range 0.2 fold ~ 1.8 fold of the optimal values. 
+# Parameter ranges
 # Users flexiably specifiy ranges based on their own purpose and qustions.
 # For simplicity, MAPPA deals with only positive values. Respective signs can be restored at the actual simulation codes.
-prms.values.optimum.varied  <- abs(prms.values.optimum[prms.varied]) 
-prms.optimum.varied.min <- prms.values.optimum.varied - 0.8*prms.values.optimum.varied # the lower limits of the ranges
-prms.optimum.varied.max <- prms.values.optimum.varied + 0.8*prms.values.optimum.varied # the upper limits of the ranges
-
-prm.ranges <- data.frame(names = names(prms.values.optimum.varied),
-                                                 min = prms.optimum.varied.min,
-                                                 max = prms.optimum.varied.max)
+prms.ranges <- data.frame(name = c("K_tfh_blz", "n_tfh_blz", "K_blz_tfh", "n_blz_tfh",  "K_blz_tfr", "n_blz_tfr", "K_tfr_tfh"),
+                                                 min =  c(0.05,         0.2,          1,           0.2,         5,          0.2,           0.2      ),
+                                                 max =  c(0.15,         5,            1.5,         5,           10,           5,            0.5 ))
 
 #Save as csv files with header names, names, min, max
-write.table(prm.ranges, file = "examples/prm_ranges.csv", quote = F, row.names = F, col.names = T, sep = ",")
+write.csv(prms.ranges, file = "examples/prm_ranges.csv", quote = F, row.names = F)
 ```
 
-Next, launch MAPPA using `launch_MAPPA()`, preferablly from a new R
-session.
+#### Create a PPM object and register the defined parameter ranges
+
+##### Launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
+
+``` r
+library(MAPPA)
+launch_MAPPA()
+```
+
+##### Create and save a PPM object
+
+<img src="man/figures/create_PPM.png" width="600" />
+
+Since currently MAPPA is not stable, please make sure save the PPM
+object frequently not to lose the analysis results.
+
+<img src="man/figures/save_PPM1.png" width="600" />
+
+<img src="man/figures/save_PPM2.png" width="600" />
+
+##### Register parameter ranges to PPM and sample parameter combinations
+
+Go to the `Parameter combination sampling` –\> `Initial sampling` tab.
+
+<img src="man/figures/prm_smpl_tab.png" width="600"/>
+
+Load the parameter
+ranges.
+
+<img src="man/figures/load_prm_ranges.png" width="600"/>
+
+##### Register the parameter ranges to PPM and sample parameter combinations.
+
+<img src="man/figures/gen_prm_combs.png" width="600"/>
+
+Register the sampled parameter combinations to PPM and save as a text
+file.
+
+<img src="man/figures/save_prmset1.png" width="600"/>
+
+<img src="man/figures/save_prmset2.png" width="600"/>
+
+##### Generate tSNE or UMAP emebedding of the sampled parameter combinations.
+
+We have not included tSNE and UMAP in MAPPA yet. Users are encouraged to
+generate the embeddings on their own.
+
+``` r
+library(Rtsne)
+
+#Load the PPM object.
+PPM.obj <- readRDS("examples/PPM_GC_reaction.Rds")
+
+#Obtain the generated parameter combinations.
+prmset.list <- get.init.prm.combs(object = PPM.obj,
+                                                                    prm.ranges.name = "prm.ranges", #Specify the exact name of the parameter ranges defined in MAPPA
+                                                                    name = "prmset" ##Specify the exact name of the parameter combinations defined in MAPPA
+                                                                    )
+
+names(prmset.list)
+```
+
+    ## [1] "method"      "log.scale"   "raw.smpl"    "prm.combs"   "prm.combs.z"
+    ## [6] "prmset"
+
+There are 6 elements in the retieved list.
+
+  - method: sampling method.
+  - log.scale: whether parameters are sampled in the log scale or not.
+  - raw.smpl: raw values of sampled parameter combinations between 0 and
+    1 for Sobol’, pseudorandom, and latin hypercube.
+  - prm.combs: sampled parameter combinations.
+  - prm.combs.z: standardized sampled parameter combinations.
+  - rd\_seed: seed numbers assigned to each parameter combination for
+    stochastic simulations.
+
+<!-- end list -->
+
+``` r
+#Use the standardized parameter combinations for embedding
+if(0){ #Do not run for the tutorial since it may takes long.
+    prmset.tsne <- Rtsne( prmset.list$prm.combs.z[,2:8])
+  prmset.tsne <- data.frame(pkey = prmset$pkey, prmset.tsne$Y)
+  names(prmset.tsne) <- c("pkey", "tSNE1", "tSNE2")
+}
+#tSNE was prepared for this tutirial, 
+prmset.tsne <- readRDS("examples/tSNE_tutorial.Rds")
+
+
+# Register the tSNE embedding to the PPM object
+PPM.obj <- readRDS("examples/PPM_GC_reaction.Rds")
+add.tsne.coord(PPM.obj) <- list( prm.combs.name = "prmset", ##Specify the exact name of the parameter combinations defined in MAPPA
+                                       tsne.coord = prmset.tsne)
+saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
+```
+
+##### Conduct simulations across sampled parameter combinations, aggregate simulation results, define (a) phenotype(s) of interest, and register to PPM. (This should be done outside of MAPPA.)
+
+Users can conduct simulations for the model across sampled parameter
+combinations with any tools of their preferences. For the GC reaction
+model, we conducted the simulations usmg the Matlab. Here, we showcase
+MAPPA using the simulations results in scheme 2:
+
+<img src="man/figures/simulation_scheme.png" width="400"/>
+
+We aggregated the simulation results for the demonstration purpose here.
+
+``` r
+#Load simulation results
+df.sim.results <- readRDS("examples/sim_results_tutorial.Rds")
+
+#Plot all simulation results
+library(tidyverse)
+```
+
+    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+
+    ## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+    ## ✓ tibble  3.0.4     ✓ dplyr   1.0.2
+    ## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
+    ## ✓ readr   1.3.1     ✓ forcats 0.4.0
+
+    ## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## x dplyr::filter() masks stats::filter()
+    ## x dplyr::lag()    masks stats::lag()
+
+``` r
+df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = B_gc, group = pkey), alpha = 0.05) 
+```
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+``` r
+df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = TFH, group = pkey), alpha = 0.05)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
+
+``` r
+df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = TFR, group = pkey), alpha = 0.05)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-10-3.png)<!-- -->
