@@ -188,15 +188,14 @@ write.csv(prms.ranges, file = "examples/prm_ranges.csv", quote = F, row.names = 
 
 ```
 
-#### Create a PPM object and register the defined parameter ranges 
-##### Launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
+#### Launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
 ```{r eval=F}
 library(MAPPA)
 launch_MAPPA()
 ```
 
 
-##### Create and save a PPM object
+#### Create and save a PPM object
 
 <img src="man/figures/create_PPM.png" width="600" />
 
@@ -218,7 +217,7 @@ Load the parameter ranges.
 <img src="man/figures/load_prm_ranges.png" width="600"/>
 
 
-##### Register the parameter ranges to PPM and sample parameter combinations.
+#### Register the parameter ranges to PPM and sample parameter combinations.
 
 <img src="man/figures/gen_prm_combs.png" width="600"/>
 
@@ -228,7 +227,7 @@ Register the sampled parameter combinations to PPM and save as a text file.
 
 <img src="man/figures/save_prmset2.png" width="600"/>
 
-##### Generate tSNE or UMAP emebedding of the sampled parameter combinations.
+#### Generate tSNE or UMAP emebedding of the sampled parameter combinations.
 
 We have not included tSNE and UMAP in MAPPA yet. Users are encouraged to generate the embeddings on their own.
 
@@ -263,7 +262,7 @@ if(0){ #Do not run for the tutorial since it may takes long.
   prmset.tsne <- data.frame(pkey = prmset$pkey, prmset.tsne$Y)
   names(prmset.tsne) <- c("pkey", "tSNE1", "tSNE2")
 }
-#tSNE was prepared for this tutirial, 
+#Loading precomputed tSNE for this tutirial, 
 prmset.tsne <- readRDS("examples/tSNE_tutorial.Rds")
 
 
@@ -276,7 +275,7 @@ saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 ```
 
 
-##### Conduct simulations across sampled parameter combinations, aggregate simulation results, define (a) phenotype(s) of interest, and register to PPM. (This should be done outside of MAPPA.)
+#### Conduct simulations across sampled parameter combinations, aggregate simulation results, define (a) phenotype(s) of interest, and register to PPM. (This should be done outside of MAPPA.)
 
 Users can conduct simulations for the model across sampled parameter combinations with any tools of their preferences. For the GC reaction model, we conducted the simulations usmg the Matlab. Here, we showcase MAPPA using the simulations results in scheme 2:
 
@@ -284,17 +283,37 @@ Users can conduct simulations for the model across sampled parameter combination
 
 We aggregated the simulation results for the demonstration purpose here.
 
-```{r}
+```{r eval=F}
 #Load simulation results
 df.sim.results <- readRDS("examples/sim_results_tutorial.Rds")
 
 #Plot all simulation results
+if(0){
 library(tidyverse)
 df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = B_gc, group = pkey), alpha = 0.05) 
 df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = TFH, group = pkey), alpha = 0.05)
 df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = TFR, group = pkey), alpha = 0.05)
+}
 ```
 
+
+<img src="man/figures/sim_results.png" width="600"/>
+
+Then, we focused on how long the GC rection persist. Therefore, we defined the phenotype of durtation of the GC reaction as area under curve of the time trajectory of the total GC B cells divided by the max level of the total GC B cells across the time, denoted as `Dur.GC`.
+
+```{r}
+
+
+
+
+
+
+
+
+
+
+
+```
 
 
 

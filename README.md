@@ -299,16 +299,14 @@ prms.ranges <- data.frame(name = c("K_tfh_blz", "n_tfh_blz", "K_blz_tfh", "n_blz
 write.csv(prms.ranges, file = "examples/prm_ranges.csv", quote = F, row.names = F)
 ```
 
-#### Create a PPM object and register the defined parameter ranges
-
-##### Launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
+#### Launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
 
 ``` r
 library(MAPPA)
 launch_MAPPA()
 ```
 
-##### Create and save a PPM object
+#### Create and save a PPM object
 
 <img src="man/figures/create_PPM.png" width="600" />
 
@@ -330,7 +328,7 @@ ranges.
 
 <img src="man/figures/load_prm_ranges.png" width="600"/>
 
-##### Register the parameter ranges to PPM and sample parameter combinations.
+#### Register the parameter ranges to PPM and sample parameter combinations.
 
 <img src="man/figures/gen_prm_combs.png" width="600"/>
 
@@ -341,7 +339,7 @@ file.
 
 <img src="man/figures/save_prmset2.png" width="600"/>
 
-##### Generate tSNE or UMAP emebedding of the sampled parameter combinations.
+#### Generate tSNE or UMAP emebedding of the sampled parameter combinations.
 
 We have not included tSNE and UMAP in MAPPA yet. Users are encouraged to
 generate the embeddings on their own.
@@ -395,7 +393,7 @@ add.tsne.coord(PPM.obj) <- list( prm.combs.name = "prmset", ##Specify the exact 
 saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 ```
 
-##### Conduct simulations across sampled parameter combinations, aggregate simulation results, define (a) phenotype(s) of interest, and register to PPM. (This should be done outside of MAPPA.)
+#### Conduct simulations across sampled parameter combinations, aggregate simulation results, define (a) phenotype(s) of interest, and register to PPM. (This should be done outside of MAPPA.)
 
 Users can conduct simulations for the model across sampled parameter
 combinations with any tools of their preferences. For the GC reaction
@@ -411,34 +409,12 @@ We aggregated the simulation results for the demonstration purpose here.
 df.sim.results <- readRDS("examples/sim_results_tutorial.Rds")
 
 #Plot all simulation results
+if(0){
 library(tidyverse)
-```
-
-    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
-
-    ## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
-    ## ✓ tibble  3.0.4     ✓ dplyr   1.0.2
-    ## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
-    ## ✓ readr   1.3.1     ✓ forcats 0.4.0
-
-    ## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-
-``` r
 df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = B_gc, group = pkey), alpha = 0.05) 
-```
-
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
-
-``` r
 df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = TFH, group = pkey), alpha = 0.05)
-```
-
-![](README_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
-
-``` r
 df.sim.results %>%   ggplot() +geom_line(aes(x=Time, y = TFR, group = pkey), alpha = 0.05)
+}
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-3.png)<!-- -->
+<img src="man/figures/sim_results.png" width="600"/>
