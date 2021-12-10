@@ -2609,7 +2609,7 @@ server <- function(input, output, session) {
     }
     isolate({
       list(
-        selectInput("load_phenotype",label = h4("Select a phenotype"),choices =   phenotypes.names, size = 3,multiple = FALSE, selectize = FALSE)
+        selectInput("load_phenotype",label = h4("Select a phenotype"),choices =   phenotypes.names, size = 4,multiple = FALSE, selectize = FALSE)
       )
     })
   })
@@ -2645,7 +2645,7 @@ server <- function(input, output, session) {
     }
     isolate({
       list(
-        selectInput("load_parameter_sets",label = h4("Select parameter sets"),choices =   prm.sets.names, size = 3,multiple = TRUE, selectize = FALSE)
+        selectInput("load_parameter_sets",label = h4("Select parameter sets"),choices =   prm.sets.names, size = 4,multiple = TRUE, selectize = FALSE)
       )
     })
   })
@@ -2665,7 +2665,7 @@ server <- function(input, output, session) {
     }else{}
     isolate({
       list(
-        selectInput("load_ml.model",label = h4("Select a ML model"),choices =   ml.models.names, size = 3,multiple = FALSE, selectize = FALSE)
+        selectInput("load_ml.model",label = h4("Select a ML model"),choices =   ml.models.names, size = 4,multiple = FALSE, selectize = FALSE)
       )
     })
   })
@@ -2846,7 +2846,7 @@ server <- function(input, output, session) {
       ml.model.selected$class.def <- temp.ml.model$class.def
       ml.model.selected$note <- temp.ml.model$note
       ml.model.selected$phenotype <-  input$load_phenotype
-      ml.model.selected$name <- temp.ml.model$name
+      ml.model.selected$name <- input$load_ml.model
 
       ##ml.model specific tsne
       if(get.tsne.coord.ml.exist(object = PPM$object, ml.model.name = input$load_ml.model  )){

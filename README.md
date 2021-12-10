@@ -266,7 +266,7 @@ reactions.
 
 <img src="man/figures/GC_model.png" width="400" />
 
-#### Define a dynamical model and determine parameters to be varied with their associated plausible ranges.
+#### 1\. Define a dynamical model and determine parameters to be varied with their associated plausible ranges.
 
 First, based on typical parameter values and biological consideration,
 we define a set of parameter ranges by choosing parameters to vary and
@@ -299,31 +299,33 @@ prms.ranges <- data.frame(name = c("K_tfh_blz", "n_tfh_blz", "K_blz_tfh", "n_blz
 write.csv(prms.ranges, file = "examples/prm_ranges.csv", quote = F, row.names = F)
 ```
 
-#### Launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
+#### 2\. Launch MAPPA using `launch_MAPPA()`, preferablly from a new R session.
 
 ``` r
 library(MAPPA)
 launch_MAPPA()
 ```
 
-#### Create and save a PPM object.
+#### 3\. Create and save a PPM object.
 
 <img src="man/figures/create_PPM.png" width="600" />
 
 Since currently MAPPA is not stable, please make sure save the PPM
-object frequently not to lose the analysis results.
+object frequently not to lose the analysis
+results.
 
 <img src="man/figures/save_PPM1.png" width="600" />
 
 <img src="man/figures/save_PPM2.png" width="600" />
 
-#### Register parameter ranges to PPM and sample parameter combinations
+#### 4\. Register parameter ranges to PPM and sample parameter combinations
 
 Go to the `Parameter combination sampling` –\> `Initial sampling` tab.
 
 <img src="man/figures/prm_smpl_tab.png" width="600"/>
 
-Load the parameter ranges.
+Load the parameter ranges specified above. Or, the parameter ranges can
+be specified in MAPPA.
 
 <img src="man/figures/load_prm_ranges.png" width="600"/>
 
@@ -338,7 +340,7 @@ file.
 
 <img src="man/figures/save_prmset2.png" width="600"/>
 
-#### Generate tSNE or UMAP emebedding of the sampled parameter combinations.
+#### 5\. Generate tSNE or UMAP emebedding of the sampled parameter combinations.
 
 We have not included tSNE and UMAP in MAPPA yet. Users are encouraged to
 generate the embeddings on their own.
@@ -392,7 +394,7 @@ add.tsne.coord(PPM.obj) <- list( prm.combs.name = "prmset", #Specify the exact n
 saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 ```
 
-#### Conduct simulations across sampled parameter combinations, aggregate simulation results, define (a) phenotype(s) of interest, and register to PPM. (This should be done outside of MAPPA.)
+#### 6\. Conduct simulations across sampled parameter combinations, aggregate simulation results, define (a) phenotype(s) of interest, and register to PPM. (This should be done outside of MAPPA.)
 
 Users can conduct simulations for the model across sampled parameter
 combinations with any tools of their preferences. For the GC reaction
@@ -467,7 +469,7 @@ add.phenotypes(PPM.obj) <-  list(name = "dur.GC_delay_TFR", #Specify the name of
 saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 ```
 
-#### (Back to MAPPA) Reload the PPM object and train machine learning (ML) models in a flexible manner.
+#### 7\. (Back to MAPPA) Train machine learning (ML) models in a flexible manner.
 
 Be sure to reload the modified PPM object with the new tSNE/UMAP
 embedding and the phenotype, Dur.GC.
@@ -476,9 +478,83 @@ embedding and the phenotype, Dur.GC.
 
 Go to the `ML model training` tab and specify the phenotype, set(s) of
 parameter combinations, input parameters, and model types (regression or
-classification).
+classification). For imbalanced datasets, setting `Balanced training`
+option as Yes perform balanced sampling of data from each class building
+each tree.
 
 <img src="man/figures/ML_model_2.png" width="600"/>
+
+Click the `Further manipuation` button for additional specification of
+ML model training. Especially, for classification models, the output
+classes should be defined here. Then, click the `Train ML model!` for
+model training.
+
+<img src="man/figures/ML_model_3.png" width="600"/>
+
+Once the ML model training is done, the results are shown. Users can
+register the trained ML models to the PPM or remove them. Prediction
+performaces can be examined.
+
+<img src="man/figures/ML_model_4.png" width="600"/>
+
+<img src="man/figures/ML_model_5.png" width="600"/>
+
+The procedures of training regression ML models are similar to those
+explained for classification models.
+
+<img src="man/figures/ML_model_6.png" width="600"/>
+
+The results of regression ML models are shown as below.
+
+<img src="man/figures/ML_model_7.png" width="600"/>
+
+<img src="man/figures/ML_model_8.png" width="600"/>
+
+#### 8\. Explore PPM
+
+In the panel ‘Launch PPM Visualization’, select a phenotype of interest,
+parameter sets in t-SNE, and a ML model, and then click the ‘Launch
+Visualization\!’ button. Then a t-SNE plot for selected parameter sets
+will come up in the panel ‘PPM Visualization in tSNE’.
+
+In the side panel in the panel ‘PPM Visualization in tSNE’, you can
+adjust various aspect of the t-SNE plot, such as the color scale, the
+size of points, and transparency of points. You can select a point by a
+single click, through which original and scaled parameter values of the
+selected point along with the corresponding parameter key will be shown
+in the ‘Further Information’ popup. You can select multiple points by
+dragging the mouse pointer on the plot. By double clicking the dragged
+region, you can zoom in further.
+
+You can see the further information by clicking the ‘Further
+Information’ button in the panel ‘PPM Visualization in tSNE’. This
+will show you various information in a seperate popup panel, including
+global variable importance (GVI), original and scaled parameter values
+of the selected point, and the training results and prediction
+accuracies for out-of-bag (OOB) and test dataset of the ML model. You
+can also manually select by inputting a parameter key in the ‘Input
+parameter key for manual selection’ window.
+
+In the ‘Heatmap for selected points’ tab of the panel ‘Additional
+Visualization’, you can further visualize individual parameter
+combinations and local variable importances (LVIs) for dragged points by
+hierarchical clustering heatmaps. You can further define clusters for
+the LVI heatmap and inspect them through the t-SNE plot.
+
+In the ‘LVI and parameter perturbation’ tab of the panel ‘Additional
+Visualization’, you will see the LVI of the selected parameter
+combination, once you select a point by clicking in the t-SNE plot or
+manually inputting a parameter key. Under the guidance of the LVI, which
+tells you the phenotype’s local sensitivity to each parameter, you can
+perturb two parameters and see the prediction of the phenotype in a 2D
+heatmap or 3D surface plot. Moreover, you can generate and save the
+perturbed parameter combinations for further validation simulation.
+
+In the ‘Validation’ tab of the panel ‘Additional Visualization’, you can
+further visualize the results of validation simulations in comparison
+with predictions of in-silico parameter perturbations shown in the main
+paper. The scatter plot in the rightmost enables you to examine validity
+of the prediction of the in-silico parameter perturbation.
 
 #### addtional sampling
 

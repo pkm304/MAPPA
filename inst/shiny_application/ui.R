@@ -268,13 +268,15 @@ ui <- shinydashboard::dashboardPage(
 
       shinydashboard::tabItem("exp_phase_tab",
               fluidRow(
-                column(3, uiOutput("list_phenotypes_tab_ui"),
+                column(4, uiOutput("list_phenotypes_tab_ui"),
                        checkboxInput("with_ml.models", label = h5("With ML models"))),
-                column(3, uiOutput("list_prm_sets_tab_ui"),
+                column(4, uiOutput("list_prm_sets_tab_ui"),
                        checkboxInput("with_tsne", label = h5("With tSNE coordinates"))),
-                column(3, uiOutput("list_ml.models_tab_ui")),
-                column(3, actionButton("launch_exp_phase",label = "Launch!"),
-                       br(),
+                column(4, uiOutput("list_ml.models_tab_ui"))
+              ),
+              fluidRow(
+                column(4, actionButton("launch_exp_phase",label = "Launch!")),
+                column(4,
                        h4("Selected ML model"),
                        verbatimTextOutput("test_exp_phase_tab"))
               ),
