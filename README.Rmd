@@ -372,22 +372,54 @@ The results of regression ML models are shown as below.
 
 #### 8. Explore PPM 
 
-* Launching PP
-In the panel 'Launch PPM Visualization', select a phenotype of interest, parameter sets in t-SNE, and a ML model, and then click the ‘Launch Visualization!’ button. Then a t-SNE plot for selected parameter sets will come up in the panel 'PPM Visualization in tSNE'.
+1. Launching PPM visualization
 
-In the side panel in the panel 'PPM Visualization in tSNE', you can adjust various aspect of the t-SNE plot, such as the color scale, the size of points, and transparency of points. You can select a point by a single click, through which original and scaled parameter values of the selected point along with the corresponding parameter key will be shown in the 'Further Information' popup. You can select multiple points by dragging the mouse pointer on the plot. By double clicking the dragged region, you can zoom in further.
+Select a phenotype of interest, parameter sets in t-SNE, and a ML model, and then click the ‘Launch Visualization!’ button. Then a t-SNE plot for selected parameter sets will come up below.
 
-You can see the further information by clicking the ‘Further Information' button in the panel 'PPM Visualization in tSNE'. This will show you various information in a seperate popup panel, including global variable importance (GVI), original and scaled parameter values of the selected point, and the training results and prediction accuracies for out-of-bag (OOB) and test dataset of the ML model. You can also manually select by inputting a parameter key in the 'Input parameter key for manual selection' window.
+<img src="man/figures/PPM_exp_1.png" width="600"/>
 
-In the ‘Heatmap for selected points’ tab of the panel 'Additional Visualization', you can further visualize individual parameter combinations and local variable importances (LVIs) for dragged points by hierarchical clustering heatmaps. You can further define clusters for the LVI heatmap and inspect them through the t-SNE plot.
+2. Manipulation of  tSNE/UMAP plot, GVI of ML model, and selecting points
 
-In the ‘LVI and parameter perturbation’ tab of the panel 'Additional Visualization', you will see the LVI of the selected parameter combination, once you select a point by clicking in the t-SNE plot or manually inputting a parameter key. Under the guidance of the LVI, which tells you the phenotype’s local sensitivity to each parameter, you can perturb two parameters and see the prediction of the phenotype in a 2D heatmap or 3D surface plot. Moreover, you can generate and save the perturbed parameter combinations for further validation simulation.
+Adjust various aspects of the t-SNE/UMAP plot, such as the color scale, the size of points, and transparency of points. Users can select a point by a single click, through which original and scaled parameter values of the selected point along with the corresponding parameter key is shown. Users can select multiple points by dragging the mouse pointer on the plot. By double clicking the dragged region, Users can zoom in further.
 
-In the ‘Validation’ tab of the panel 'Additional Visualization', you can further visualize the results of validation simulations in comparison with predictions of in-silico parameter perturbations shown in the main paper. The scatter plot in the rightmost enables you to examine validity of the prediction of the in-silico parameter perturbation.
+<img src="man/figures/PPM_exp_2.png" width="600"/>
+
+3. Further information
+
+Click the `Further Info for selected ML model` button for further information, such as the training results and prediction accuracies of the ML model. 
+
+<img src="man/figures/PPM_exp_3.png" width="600"/>
+
+<img src="man/figures/PPM_exp_4.png" width="600"/>
+
+4. Heatmaps of parameter combinations and LVIs for dragged points
+
+In the `Heatmaps for selected points` tab, visualize individual parameter combinations and local variable importances (LVIs) for dragged points by hierarchical clustering heatmaps. Define clusters for the LVI heatmap and inspect them through the tSNE/UMAP plot.
+
+<img src="man/figures/PPM_exp_5.png" width="600"/>
+
+<img src="man/figures/PPM_exp_6.png" width="600"/>
+
+<img src="man/figures/PPM_exp_7.png" width="600"/>
+
+<img src="man/figures/PPM_exp_8.png" width="600"/>
+
+5. LVI and in-silico perturbation
+
+In the `LVI and parameter perturbation` tab, the LVI of the selected parameter combination is shown. Under the guidance of the LVI, which suggests the phenotype’s local sensitivity to each parameter, users can perturb two parameters and see the prediction of the phenotype in a 2D heatmap or 3D surface plot. Moreover, users can generate and save the perturbed parameter combinations for further validation simulation.
+
+<img src="man/figures/PPM_exp_9.png" width="600"/>
+
+<img src="man/figures/PPM_exp_10.png" width="600"/>
+
+5. Validation of in-silico perturbation
+
+In the `Validation` tab, further visualize the results of validation simulations in comparison with predictions of in-silico parameter perturbations. With the scatter plot in the rightmost, the validity of the prediction of the in-silico parameter perturbation can be assessed.
 
 
+#### Advanced usages
 
-#### addtional sampling
+##### Addtional parameter sampling
 ```{r}
 # prm.combs <- prmset.list$prm.combs
 # phens_delay_TFR$pkey <- as.character(phens_delay_TFR$pkey)
@@ -398,3 +430,4 @@ In the ‘Validation’ tab of the panel 'Additional Visualization', you can fur
 	
 ```
 
+##### Applying filtering

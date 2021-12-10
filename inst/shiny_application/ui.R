@@ -283,7 +283,7 @@ ui <- shinydashboard::dashboardPage(
 
               fluidRow(
                 column(9,
-                       h4("Parameter space in t-SNE"),
+                       h4("Parameter space in t-SNE/UMAP"),
                        sidebarLayout(
 
                          sidebarPanel(

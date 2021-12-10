@@ -3992,21 +3992,22 @@ server <- function(input, output, session) {
   })
 
 
-  output$gen_prm_combs_val_ui <- renderUI(
+  output$gen_prm_combs_val_ui <- renderUI({
     if(!is.null(prm.combs.val.z$DF)){
       list(actionButton("gen_prm_combs_val", "Generate validation parameter combinations"),
            fluidRow(
              column(4,dateInput("pkey_date_val", label = h6("Current date"), format = "mmddyyyy")),
-             column(4,textInput("pkey_digits_val", label = h6("Starting digit"))),
+             column(4,textInput("pkey_digits_val", label = h6("Starting digit")))),
              #column(4,numericInput("num_grids_val", label = h6("Number of grids"),value = 30, min = 2, max = 100)),
+           fluidRow(
              DT::dataTableOutput("prm_combs_val"),
              h5("Save validation parameter combinations"),
-             shinyFiles::shinySaveButton("save_prm_combs_val", "Save!", "Save as ...", filetype=list(text=".txt", csv=".csv"))
+             shinyFiles::shinySaveButton("save_prm_combs_val", "Save!", "Save as ...", filetype=list(text=".txt", csv=".csv")))
              #downloadButton("save_prm_combs_val", "Save validation parameter combinations")
-           ))
+           )
 
     }
-  )
+  })
 
   observeEvent(input$gen_prm_combs_val,{
 
