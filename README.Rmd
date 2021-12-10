@@ -205,19 +205,17 @@ Since currently MAPPA is not stable, please make sure save the PPM object freque
 
 <img src="man/figures/save_PPM2.png" width="600" />
 
-##### Register parameter ranges to PPM and sample parameter combinations
+#### Register parameter ranges to PPM and sample parameter combinations
 
 Go to the `Parameter combination sampling` --> `Initial sampling` tab.
 
 <img src="man/figures/prm_smpl_tab.png" width="600"/>
 
-
 Load the parameter ranges.
 
 <img src="man/figures/load_prm_ranges.png" width="600"/>
 
-
-#### Register the parameter ranges to PPM and sample parameter combinations.
+Specify parameter sampling options.
 
 <img src="man/figures/gen_prm_combs.png" width="600"/>
 
@@ -344,17 +342,25 @@ saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 
 #### (Back to MAPPA) Reload the PPM object and train machine learning (ML) models in a flexible manner.
 
+Be sure to reload the modified PPM object with the new tSNE/UMAP embedding and the phenotype, Dur.GC.
+
+<img src="man/figures/ML_model_1.png" width="600"/>
+
+Go to the `ML model training` tab and specify the phenotype, set(s) of parameter combinations, input parameters, and model types (regression or classification).
+
+<img src="man/figures/ML_model_2.png" width="600"/>
+
 
 
 
 #### addtional sampling
 ```{r}
-prm.combs <- prmset.list$prm.combs
-phens_delay_TFR$pkey <- as.character(phens_delay_TFR$pkey)
-
-prm.combs.sel <- prm.combs %>% filter(pkey %in% (phens_delay_TFR %>% filter(dur.B_gc >= 100 & dur.B_gc < 800) %>% select(pkey) %>% c() %>% unlist()))
-
-write.csv(prm.combs.sel, "examples/prmset.sel.csv", quote = F, row.names = F)
+# prm.combs <- prmset.list$prm.combs
+# phens_delay_TFR$pkey <- as.character(phens_delay_TFR$pkey)
+# 
+# prm.combs.sel <- prm.combs %>% filter(pkey %in% (phens_delay_TFR %>% filter(dur.B_gc >= 100 & dur.B_gc < 800) %>% select(pkey) %>% c() %>% unlist()))
+# 
+# write.csv(prm.combs.sel, "examples/prmset.sel.csv", quote = F, row.names = F)
 	
 ```
 

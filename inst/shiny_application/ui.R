@@ -389,7 +389,7 @@ ui <- shinydashboard::dashboardPage(
                                      fluidRow(uiOutput("validation_plots"))
 
                                      ),
-                            tabPanel("Navigation", value = "tab_nav",
+                            tabPanel("Navigation (under development)", value = "tab_nav",
 
                                      fluidRow(
                                        ##parameter sliders
