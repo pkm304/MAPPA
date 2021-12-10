@@ -380,7 +380,11 @@ ui <- shinydashboard::dashboardPage(
                                      ),
                             tabPanel("Validation", value = "tab_val",
 
-                                     fileInput("file_validation", "Load a validation simulation result (.txt, .csv)."),
+                                     h5("Load a validation simulation result (.csv)."),
+                                     shinyFiles::shinyFilesButton("file_validation",
+                                                                  "Browse...","Please select a file with validation simulation results",
+                                                                  FALSE),
+                                     #fileInput("file_validation", "Load a validation simulation result (.csv)."),
                                      fluidRow(uiOutput("gen_validation_ui")),
                                      fluidRow(uiOutput("validation_plots"))
 

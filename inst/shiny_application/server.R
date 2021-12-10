@@ -7,7 +7,9 @@ ggdata = data.frame() ## how to make this local? to be able to load data by user
 
 server <- function(input, output, session) {
 
-
+  if(!is.null(.start.dir)){
+    setwd(.start.dir)
+  }
   #####################################
   ######### Workspace##################
   #####################################
@@ -270,14 +272,7 @@ server <- function(input, output, session) {
 
   })
 
-  observe({
-    if(!is.null(input$file_prm_ranges)){
-      temp.df <- cbind(read.csv(input$file_prm_ranges$datapath, header = T, stringsAsFactors = F), log.scale = FALSE)
-      colnames(temp.df)[1:3] <- c('names', 'min', 'max')
-      #prm.ranges$DF <- cbind(read.table(input$file_prm_ranges$datapath, header = F, stringsAsFactors = F), log.scale = FALSE)
-      prm.ranges$DF <- temp.df
-      }
-  })
+
 
 
 
@@ -302,8 +297,42 @@ server <- function(input, output, session) {
 
   output$file_ui <- renderUI({
     input$reset
-    fileInput("file_prm_ranges", h5("Input from a file (.txt, .csv)."))
+    #fileInput("file_prm_ranges", h5("Input from a file (csv)."))
+    list(
+      h5("Input from a file (csv)."),
+      shinyFiles::shinyFilesButton("file_prm_ranges",
+                                   "Browse...","Please select a file with prameter ranges.",
+                                   FALSE)
+    )
   })
+
+
+  shinyFiles::shinyFileChoose(input,'file_prm_ranges', session=session,roots= c("root"= "~/", "cwd" = getwd()), defaultRoot = 'root')
+
+  observeEvent(input$file_prm_ranges, {
+    #inFile <- parseFilePaths(roots=c(wd='.'), input$file_PPM)
+    inFile <- shinyFiles::parseFilePaths(roots=c("root"= "~/","cwd" = getwd()), input$file_prm_ranges)
+    print(inFile$datapath)
+
+    if(length(inFile$datapath) != 0){
+      #temp.path <- sub(inFile$name,replacement = "",x = inFile$datapath)
+      #setwd(temp.path)
+      temp.df <- cbind(read.csv(as.character(inFile$datapath), header = T, stringsAsFactors = F), log.scale = FALSE)
+      colnames(temp.df)[1:3] <- c('names', 'min', 'max')
+      #prm.ranges$DF <- cbind(read.table(input$file_prm_ranges$datapath, header = F, stringsAsFactors = F), log.scale = FALSE)
+      prm.ranges$DF <- temp.df
+    }
+  })
+
+  # observe({
+  #   if(!is.null(input$file_prm_ranges)){
+  #     temp.df <- cbind(read.csv(input$file_prm_ranges$datapath, header = T, stringsAsFactors = F), log.scale = FALSE)
+  #     colnames(temp.df)[1:3] <- c('names', 'min', 'max')
+  #     #prm.ranges$DF <- cbind(read.table(input$file_prm_ranges$datapath, header = F, stringsAsFactors = F), log.scale = FALSE)
+  #     prm.ranges$DF <- temp.df
+  #   }
+  # })
+
 
   output$prm_ranges_select_ui <- renderUI({
     prm.ranges.names <- NULL
@@ -765,19 +794,35 @@ server <- function(input, output, session) {
   ##input selected parameter combinations
   output$file_prm_selected_ui <- renderUI({
     input$add_reset
-    fileInput("file_prm_selected", h5("Input from a file (.txt, .csv)."))
+    #fileInput("file_prm_selected", h5("Input from a file (.txt, .csv)."))
+    list(
+      h5("Input from a file (csv)."),
+      shinyFiles::shinyFilesButton("file_prm_selected",
+                                   "Browse...","Please select a file with selected parameter combinations.",
+                                   FALSE)
+    )
   })
 
+  shinyFiles::shinyFileChoose(input,'file_prm_selected', session=session,roots= c("root"= "~/", "cwd" = getwd()), defaultRoot = 'root')
 
-  observe({
-    if(!is.null(input$file_prm_selected)){
-      isolate(prm.combs.selected$DF <- read.table(input$file_prm_selected$datapath, header = T, stringsAsFactors = F)
-      )
-    }
-    print(prm.combs.selected$DF)
-  })
+  # observe({
+  #   if(!is.null(input$file_prm_selected)){
+  #     isolate(prm.combs.selected$DF <- read.table(input$file_prm_selected$datapath, header = T, stringsAsFactors = F)
+  #     )
+  #   }
+  #   print(prm.combs.selected$DF)
+  # })
 
+  observeEvent(input$file_prm_selected, {
+  #inFile <- parseFilePaths(roots=c(wd='.'), input$file_PPM)
+  inFile <- shinyFiles::parseFilePaths(roots=c("root"= "~/","cwd" = getwd()), input$file_prm_selected)
+  print(inFile$datapath)
 
+  if(length(inFile$datapath) != 0){
+    #isolate(prm.combs.selected$DF <- read.table(input$file_prm_selected$datapath, header = T, stringsAsFactors = F))
+    isolate(prm.combs.selected$DF <- read.csv(as.character(inFile$datapath), header = T, stringsAsFactors = F))
+  }
+})
 
   output$prm_space_selected_tab_ui <- renderUI({
     if(!is.null(input$load_prm_ranges) && is.null(input$load_init_prm_combs) && is.null(prm.combs.selected$DF)){
@@ -1694,6 +1739,7 @@ server <- function(input, output, session) {
 
   ##register to PPM
   observeEvent(input$register_ml,{
+    dir.create("ml.models", showWarnings = F)
     temp.size.ml.model <- object.size(ml.models.new$models[[input$new_ml_models_ml]]$ml.model)
     temp.size.ml.model.res <- object.size(ml.models.new$models[[input$new_ml_models_ml]]$ml.model.res)
 
@@ -2341,7 +2387,8 @@ server <- function(input, output, session) {
           fluidRow(
             column(6,style='padding-left:0px;',
                    h5("Confusion matrix"),
-                   tableOutput("conf_mat")),
+                   tableOutput("conf_mat"),
+                   tableOutput("au_rocpr")),
             column(5,offset = 1,
                    tableOutput("conf_stats"))
           )
@@ -2352,23 +2399,32 @@ server <- function(input, output, session) {
 
 
   output$conf_mat<- renderTable({
-
-    temp.table  <-  ml.model.trained$class.def$pred.perform[[input$oob_test]][[input$positive_class]]$conf.mat[[(input$pred_cut_off*100+1)]]$table
-    temp.df <- data.frame(pred_ref = row.names( temp.table),  temp.table[,1],  temp.table[,2])
-    row.names(temp.df) <- NULL
-    colnames(temp.df)[2:3] <- row.names( temp.table)
-    return(temp.df)
+    if(length(ml.model.trained$class.def$pred.perform[[input$oob_test]]) != 0 ){
+      temp.table  <-  ml.model.trained$class.def$pred.perform[[input$oob_test]][[input$positive_class]]$conf.mat[[(input$pred_cut_off*100+1)]]$table
+      temp.df <- data.frame(pred_ref = row.names( temp.table),  temp.table[,1],  temp.table[,2])
+      row.names(temp.df) <- NULL
+      colnames(temp.df)[2:3] <- row.names( temp.table)
+      return(temp.df)
+    }
   },rownames = F,align = "c")
 
   output$conf_stats<- renderTable({
-    temp.conf.mat <- ml.model.trained$class.def$pred.perform[[input$oob_test]][[input$positive_class]]$conf.mat[[(input$pred_cut_off*100+1)]]
-    temp.df <- temp.conf.mat$byClass[1:4]
-    temp.df <- append( temp.df, c(temp.conf.mat$overall[1], temp.conf.mat$byClass[11]))
-    temp.df <- data.frame(temp.df)
-    return(temp.df)
+    if(length(ml.model.trained$class.def$pred.perform[[input$oob_test]]) != 0 ){
+      temp.conf.mat <- ml.model.trained$class.def$pred.perform[[input$oob_test]][[input$positive_class]]$conf.mat[[(input$pred_cut_off*100+1)]]
+      temp.df <- temp.conf.mat$byClass[1:4]
+      temp.df <- append( temp.df, c(temp.conf.mat$overall[1], temp.conf.mat$byClass[11]))
+      temp.df <- data.frame(temp.df)
+      return(temp.df)
+    }
   },align = "c", colnames = F, rownames = T)
 
-
+  output$au_rocpr <- renderTable({
+    if(length(ml.model.trained$class.def$pred.perform[[input$oob_test]]) != 0 ){
+      temp.df <- data.frame(AUROC = AUC(ml.model.trained$class.def$pred.perform[[input$oob_test]][[input$positive_class]]$roc),
+                            AUPR =     AUC(ml.model.trained$class.def$pred.perform[[input$oob_test]][[input$positive_class]]$prec.recall))
+      return(temp.df)
+    }
+  },align = "c", colnames = T, rownames = F)
 
   output$OOB_test_pred_ui <-renderUI({
     if(!is.null(ml.model.trained$ml.model)){
@@ -2645,6 +2701,8 @@ server <- function(input, output, session) {
 
   ##loading parameter sets with accordance with the selection above
   observeEvent(input$launch_exp_phase,{
+    ##progress indicator
+    withProgress(message = 'This may take a while....', value = NULL, {
     prm.sets.selected$tsne <- data.frame(stringsAsFactors = F)
     prm.sets.selected$original <- data.frame(stringsAsFactors = F)
     prm.sets.selected$rescaled <- data.frame(stringsAsFactors = F)
@@ -2842,6 +2900,7 @@ server <- function(input, output, session) {
       prm.ranges.z.selected$DF <- prm.ranges.z.selected$DF[,intersect(parameters$ml.model, parameters$prmset)]
       prm.ranges.z.selected$DF <- cbind(prm.ranges.z.selected$DF, apply(  ml.model.selected$custom.scale$values[,-1], 2, range))
     }else{}
+    })
 
   })
 
@@ -2869,6 +2928,7 @@ server <- function(input, output, session) {
 
 
   output$exp_phase_side_ui <- renderUI({
+    if(0){
     if(!is.null(phen.range$DF) ){
       list(sliderInput("phen.range", label = h5("Range of phenotype"),
                        min = phen.range$DF[1], max = phen.range$DF[2], step = (phen.range$DF[2]-phen.range$DF[1])/500, value = c(phen.range$DF[1],phen.range$DF[2])),# min = -0.5, max = 1, step = 0.01, value = c(0.5, 1)),
@@ -2891,6 +2951,39 @@ server <- function(input, output, session) {
       )
 
     }
+    }
+
+    if(1){
+
+    if(!is.null(phen.range$DF) ){
+      list(sliderInput("phen.range", label = h5("Range of phenotype"),
+                       min = phen.range$DF[1] - (phen.range$DF[2]-phen.range$DF[1])*0.1,
+                       max = phen.range$DF[2] + (phen.range$DF[2]-phen.range$DF[1])*0.1,
+                       step = (phen.range$DF[2]-phen.range$DF[1])/500,
+                       value = c(phen.range$DF[1],phen.range$DF[2])),# min = -0.5, max = 1, step = 0.01, value = c(0.5, 1)),
+           sliderInput("phen.mid.color", label = h5("Value of mid color"),
+                       min = phen.range$DF[1], max = phen.range$DF[2], step = (phen.range$DF[2]-phen.range$DF[1])/500, value = (phen.range$DF[1] + phen.range$DF[2])/2),
+           sliderInput("point.size", label = h5("Point Size"),
+                       min = 0, max = 3, step = 0.1, value = 1),
+           sliderInput("point.alpha", label = h5("Point Transparency"),
+                       min = 0, max = 1, step = 0.1, value = 0.5),
+           uiOutput("cluster_phase_exp"),
+           radioButtons(inputId = "point_sel", label = h5("Point Selection and Zoom-in"), choices = c("Single point selection", "Multiple points selection or zoom-in" ),inline = F)
+           # verbatimTextOutput("info")
+      )
+    }else{
+      list(
+        sliderInput("point.size", label = h5("Point Size"),
+                    min = 0, max = 2, step = 0.1, value = 1),
+        sliderInput("point.alpha", label = h5("Point Transparency"),
+                    min = 0, max = 1, step = 0.1, value = 0.5)#,
+        # verbatimTextOutput("info"))
+      )
+
+    }
+    }
+
+
 
   })
 
@@ -2925,7 +3018,8 @@ server <- function(input, output, session) {
   output$t_SNE <- renderPlot({
 
     #updating global variable
-
+    ####
+    if(0){
     if(!is.null(prm.sets.selected$tsne) ){
 
       if(isolate(input$load_phenotype) == "None"){
@@ -3044,7 +3138,148 @@ server <- function(input, output, session) {
 
 
         }
+    }}
+    #####
+    if(1){
+    ##progress indicator
+    withProgress(message = 'This may take a while....', value = NULL, {
+    if(!is.null(prm.sets.selected$tsne) ){
+
+      if(isolate(input$load_phenotype) == "None"){
+        ggdata <<- data.frame(prm.sets.selected$tsne, stringsAsFactors = F)
+        names(ggdata) <<- c("pkey", "tSNE1","tSNE2")
+        p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2"))#, color = input$load_phenotype))
+        p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha, color = "black") +# +scale_colour_gradient2(low="blue", high="red", midpoint = 0.4) + #labs(title =paste0( "tsne for original data"))  +
+          #xlim(-30,30) +ylim(-30,30) +
+          ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+          ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
+        p1
+
+      } else {
+
+        if(!is.null(ml.model.selected$tsne)){
+
+          #model specific
+          if(input$tsne_ml){
+            temp.pkey <- intersect(ml.model.selected$tsne$pkey, phenotype.values.selected$DF$pkey)
+            #all.equal(as.character(prm.sets.selected$tsne$pkey[prm.sets.selected$tsne$pkey%in%temp.pkey]), phenotype.values.selected$DF$pkey[phenotype.values.selected$DF$pkey%in%temp.pkey],check.attributes = F)
+            temp.tsne <-ml.model.selected$tsne
+            temp.phen.values <- phenotype.values.selected$DF
+
+            temp.tsne <- temp.tsne[temp.tsne$pkey %in%temp.pkey,  ]
+            temp.tsne <- temp.tsne[order(temp.tsne$pkey),  ]
+            temp.phen.values <- temp.phen.values[temp.phen.values$pkey %in% temp.pkey, ]
+            temp.phen.values <- temp.phen.values[order(temp.phen.values$pkey), ]
+          }else{
+            temp.pkey <- intersect(prm.sets.selected$tsne$pkey, phenotype.values.selected$DF$pkey)
+            all.equal(as.character(prm.sets.selected$tsne$pkey[prm.sets.selected$tsne$pkey%in%temp.pkey]), phenotype.values.selected$DF$pkey[phenotype.values.selected$DF$pkey%in%temp.pkey],check.attributes = F)
+            temp.tsne <-prm.sets.selected$tsne
+            temp.phen.values <- phenotype.values.selected$DF
+
+            temp.tsne <- temp.tsne[temp.tsne$pkey %in%temp.pkey,  ]
+            temp.tsne <- temp.tsne[order(temp.tsne$pkey),  ]
+            temp.phen.values <- temp.phen.values[temp.phen.values$pkey %in% temp.pkey, ]
+            temp.phen.values <- temp.phen.values[order(temp.phen.values$pkey), ]
+          }
+        }else{
+          temp.pkey <- intersect(prm.sets.selected$tsne$pkey, phenotype.values.selected$DF$pkey)
+          all.equal(as.character(prm.sets.selected$tsne$pkey[prm.sets.selected$tsne$pkey%in%temp.pkey]), phenotype.values.selected$DF$pkey[phenotype.values.selected$DF$pkey%in%temp.pkey],check.attributes = F)
+          temp.tsne <-prm.sets.selected$tsne
+          temp.phen.values <- phenotype.values.selected$DF
+
+          temp.tsne <- temp.tsne[temp.tsne$pkey %in%temp.pkey,  ]
+          temp.tsne <- temp.tsne[order(temp.tsne$pkey),  ]
+          temp.phen.values <- temp.phen.values[temp.phen.values$pkey %in% temp.pkey, ]
+          temp.phen.values <- temp.phen.values[order(temp.phen.values$pkey), ]
+
+        }
+
+
+        ##show data only used in ML model trainig and test
+        if(!is.null(ml.model.selected$ml.model) & input$within_ml.model == "All" ){
+          phen.range$DF <- signif(range(temp.phen.values[,2], na.rm = T),1)
+        }else if(!is.null(ml.model.selected$ml.model) & input$within_ml.model == "Training and test sets" ){
+          if(ml.model.selected$train.data == "whole"){
+          }else{
+            temp.tsne <- temp.tsne[temp.tsne$pkey %in% c(ml.model.selected$train.data,ml.model.selected$test.data),  ]
+            temp.tsne <- temp.tsne[order(temp.tsne$pkey),  ]
+            temp.phen.values <- temp.phen.values[temp.phen.values$pkey %in% c(ml.model.selected$train.data,ml.model.selected$test.data), ]
+            temp.phen.values <- temp.phen.values[order(temp.phen.values$pkey), ]
+          }
+          phen.range$DF <- signif(range(temp.phen.values[,2], na.rm = T),1)
+        }else if(!is.null(ml.model.selected$ml.model) & input$within_ml.model == "Training set" ){
+          if(ml.model.selected$train.data[1] == "whole"){
+          }else{
+            temp.tsne <- temp.tsne[temp.tsne$pkey %in% ml.model.selected$train.data,  ]
+            temp.tsne <- temp.tsne[order(temp.tsne$pkey),  ]
+            temp.phen.values <- temp.phen.values[temp.phen.values$pkey %in% ml.model.selected$train.data, ]
+            temp.phen.values <- temp.phen.values[order(temp.phen.values$pkey), ]
+          }
+          phen.range$DF <- signif(range(temp.phen.values[,2], na.rm = T),1)
+        }
+
+        ggdata <<- data.frame(temp.tsne, temp.phen.values[,isolate(input$load_phenotype)], stringsAsFactors = F)
+
+        temp.phenotype.name <- isolate(input$load_phenotype)
+
+
+
+        names(ggdata) <<- c("pkey", "tSNE1","tSNE2", isolate(input$load_phenotype))
+        ggdata <<- ggdata[ggdata[[isolate(input$load_phenotype)]] >= input$phen.range[1] & ggdata[[isolate(input$load_phenotype)]] < input$phen.range[2] , ]
+
+        input$show_clusters_phase_exp
+        if(isolate(is.null(hclust$locImp.row.cut))){
+          p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
+          p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) +ggplot2::scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
+            #xlim(-30,30) +ylim(-30,30) +
+            ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+            ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
+          #selected point
+          if(!is.null(selected$pkey)){
+            p1 <- p1 + ggplot2::geom_point(data = ggdata[ggdata$pkey == selected$pkey,], ggplot2::aes_string(x = "tSNE1", y = "tSNE2"), color = 'black', size = 2)
+          }
+          p1
+        }else{
+          if(!input$show_clusters_phase_exp){
+            p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2", color = isolate(input$load_phenotype)))
+            p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) +ggplot2::scale_colour_gradient2(low="blue", high="red", midpoint = input$phen.mid.color) + #labs(title =paste0( "tsne for original data"))  +
+              #xlim(-30,30) +ylim(-30,30) +
+              ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+              ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
+            #selected point
+            if(!is.null(selected$pkey)){
+              p1 <- p1 + ggplot2::geom_point(data = ggdata[ggdata$pkey == selected$pkey,], ggplot2::aes_string(x = "tSNE1", y = "tSNE2"), color = 'black', size = 2)
+            }
+            p1
+          }else{
+
+
+            ggdata <<- ggdata[ggdata$pkey %in% intersect(ggdata$pkey, row.names(brush.points$loc.imp)),]
+            ggdata <<- ggdata[order(ggdata$pkey),]
+            temp.clust <- isolate(hclust$locImp.row.cut[row.names(brush.points$loc.imp) %in% intersect(ggdata$pkey, row.names(brush.points$loc.imp))])
+            ggdata$cluster <<- as.factor(temp.clust)
+            rm(temp.clust)
+            ggdata <<- ggdata[ggdata$cluster %in% input$cluster_select_input ,]
+            color.gradient = colorRampPalette(c("blue", "green","yellow","red"))
+
+            p1 = ggplot2::ggplot(ggdata, ggplot2::aes_string(x = "tSNE1", y = "tSNE2", color = "cluster"))
+            p1 = p1+ggplot2::geom_point(size = input$point.size, alpha = input$point.alpha) + ggplot2::scale_colour_manual(values =color.gradient(isolate(input$num_clust))[as.numeric(input$cluster_select_input)[order(as.numeric(input$cluster_select_input))]] )+ #labs(title =paste0( "PNP t_SNE plot with var imp clusters")) + #labs(title =paste0( "tsne for original data"))  +
+              #xlim(-30,30) +ylim(-30,30) +
+              ggplot2::coord_cartesian(xlim = tsne_range$x, ylim = tsne_range$y, expand = FALSE) +
+              ggplot2::theme(axis.text=ggplot2::element_text(size=10), axis.title=ggplot2::element_text(size=10))
+            p1
+
+          }
+        }
+
+
+      }
+    }})
     }
+
+
+
+
   })
 
 
@@ -3081,6 +3316,8 @@ server <- function(input, output, session) {
 
 
   observeEvent(input$tsne_click,{
+
+    if(0){
     selected_temp = nearPoints(ggdata, input$tsne_click,  maxpoints = 1, xvar = "tSNE1", yvar = "tSNE2")
     selected_pkey = selected_temp$pkey
 
@@ -3118,6 +3355,49 @@ server <- function(input, output, session) {
       selected$pkey <- NULL
       selected$point <- NULL
       selected$point.custom.scale <- NULL
+    }}
+
+
+    if(input$point_sel == "Single point selection"){
+
+      selected_temp = nearPoints(ggdata, input$tsne_click,  maxpoints = 1, xvar = "tSNE1", yvar = "tSNE2")
+      selected_pkey = selected_temp$pkey
+
+
+      if(nrow(selected_temp) !=0){
+        selected$pkey = selected_pkey
+        selected$point <- data.frame(Parameter = parameters$prmset,
+                                     Rescaled = t(prm.sets.selected$rescaled[prm.sets.selected$rescaled$pkey == selected_pkey, -1]),
+                                     Original = t(prm.sets.selected$original[prm.sets.selected$original$pkey == selected_pkey, -1]), stringsAsFactors = F)
+        names(selected$point) <- c("parameter", "rescaled", "original")
+
+        if(!is.null(ml.model.selected$custom.scale)){
+          temp.prms <- c(intersect(parameters$ml.model, parameters$prmset), setdiff(parameters$ml.model, parameters$prmset))
+          selected$point.custom.scale <- t(prm.sets.selected$rescaled[prm.sets.selected$rescaled$pkey == selected_pkey, -1])[intersect(parameters$ml.model, parameters$prmset),]
+          if(any(ml.model.selected$custom.scale$values$pkey == selected_pkey)){
+            selected$point.custom.scale <- as.numeric(append(selected$point.custom.scale, t(ml.model.selected$custom.scale$values[ml.model.selected$custom.scale$values$pkey == selected_pkey,])[ setdiff(parameters$ml.model, parameters$prmset),]  ))
+            names(selected$point.custom.scale) <- temp.prms
+          }else{
+            temp.cs.func <- get.custom.scale.func.obj(phasespace$object, ml.model.selected$custom.scale$name)
+            selected$point.custom.scale  <- as.numeric(append(selected$point.custom.scale,
+                                                              t(temp.cs.func(prm.combs = prm.sets.selected$original[prm.sets.selected$original$pkey == selected_pkey,],
+                                                                             other.vals = ml.model.selected$custom.scale$other.vals,
+                                                                             cs.to.org = F))[ setdiff(parameters$ml.model, parameters$prmset),]
+            ))
+            names(selected$point.custom.scale) <- temp.prms
+
+          }
+
+
+        }else{
+          selected$point.custom.scale <- NULL
+        }
+
+      }else {
+        selected$pkey <- NULL
+        selected$point <- NULL
+        selected$point.custom.scale <- NULL
+      }
     }
   })
 
@@ -3216,7 +3496,7 @@ server <- function(input, output, session) {
   })
 
   output$selected_pkey_exp_phase_tab <- renderText({
-    selected$pkey
+    as.character(selected$pkey)
   })
   output$parmeter_values <- renderTable({
     if(!is.null(selected$point)){
@@ -3272,7 +3552,8 @@ server <- function(input, output, session) {
           fluidRow(
             column(6,style='padding-left:0px;',
                    h5("Confusion matrix"),
-                   tableOutput("conf_mat_phase_exp")),
+                   tableOutput("conf_mat_phase_exp"),
+                   tableOutput("au_rocpr_phase_exp")),
             column(5,offset = 1,
                    tableOutput("conf_stats_phase_exp"))
           )
@@ -3283,21 +3564,34 @@ server <- function(input, output, session) {
 
 
   output$conf_mat_phase_exp<- renderTable({
+    if(length(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]]) != 0 ){
 
-    temp.table  <-  ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$conf.mat[[(input$pred_cut_off_phase_exp*100+1)]]$table
-    temp.df <- data.frame(pred_ref = row.names( temp.table),  temp.table[,1],  temp.table[,2])
-    row.names(temp.df) <- NULL
-    colnames(temp.df)[2:3] <- row.names( temp.table)
-    return(temp.df)
+      temp.table  <-  ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$conf.mat[[(input$pred_cut_off_phase_exp*100+1)]]$table
+      temp.df <- data.frame(pred_ref = row.names( temp.table),  temp.table[,1],  temp.table[,2])
+      row.names(temp.df) <- NULL
+      colnames(temp.df)[2:3] <- row.names( temp.table)
+      return(temp.df)
+    }
   },rownames = F,align = "c")
 
   output$conf_stats_phase_exp<- renderTable({
-    temp.conf.mat <- ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$conf.mat[[(input$pred_cut_off_phase_exp*100+1)]]
-    temp.df <- temp.conf.mat$byClass[1:4]
-    temp.df <- append( temp.df, c(temp.conf.mat$overall[1], temp.conf.mat$byClass[11]))
-    temp.df <- data.frame(temp.df)
-    return(temp.df)
+    if(length(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]]) != 0 ){
+      temp.conf.mat <- ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$conf.mat[[(input$pred_cut_off_phase_exp*100+1)]]
+      temp.df <- temp.conf.mat$byClass[1:4]
+      temp.df <- append( temp.df, c(temp.conf.mat$overall[1], temp.conf.mat$byClass[11]))
+      temp.df <- data.frame(temp.df)
+      return(temp.df)
+    }
   },align = "c", colnames = F, rownames = T)
+
+
+  output$au_rocpr_phase_exp <- renderTable({
+    if(length(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]]) != 0 ){
+      temp.df <- data.frame(AUROC = AUC(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$roc),
+                            AUPR = AUC(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$prec.recall))
+      return(temp.df)
+    }
+  },align = "c", colnames = T, rownames = F)
 
 
 
@@ -3320,13 +3614,17 @@ server <- function(input, output, session) {
 
 
   output$prediction_roc_plot_class_phase_exp <- renderPlot({
-    plot(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$roc,  type= "b", main = "ROC", xlab = "False Positive", ylab = "True Positive", col= colfunc(101), pch = 19, xlim = c(0,1), ylim=c(0,1))
-    points(t(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$roc[(input$pred_cut_off_phase_exp*100+1),1:2]))
+    if(length(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]]) != 0 ){
+      plot(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$roc,  type= "b", main = "ROC", xlab = "False Positive", ylab = "True Positive", col= colfunc(101), pch = 19, xlim = c(0,1), ylim=c(0,1))
+      points(t(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$roc[(input$pred_cut_off_phase_exp*100+1),1:2]))
+    }
   })
 
   output$prediction_pr_plot_class_phase_exp <- renderPlot({
-    plot(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$prec.recall, type= "b", main = "Precision-Recall", xlab = "Recall", ylab = "Precision", col= colfunc(101), pch = 19, xlim = c(0,1), ylim=c(0,1))
-    points(t(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$prec.recall[(input$pred_cut_off_phase_exp*100+1),1:2]))
+    if(length(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]]) != 0 ){
+      plot(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$prec.recall, type= "b", main = "Precision-Recall", xlab = "Recall", ylab = "Precision", col= colfunc(101), pch = 19, xlim = c(0,1), ylim=c(0,1))
+      points(t(ml.model.selected$class.def$pred.perform[[input$oob_test_phase_exp]][[input$positive_class_phase_exp]]$prec.recall[(input$pred_cut_off_phase_exp*100+1),1:2]))
+    }
   })
 
 
@@ -3566,7 +3864,7 @@ server <- function(input, output, session) {
 
   output$plot_range_ui <- renderUI({
     if(!is.null(ml.model.selected$ml.model)){
-      if(ml.model.selected$ml.model$type == "regression"){
+      if(ml.model.selected$ml.model$type == "regression" |ml.model.selected$ml.model$type == "reg" ){
         list(
           sliderInput("plot_range", label = h5("Plot range"),
                       min = phen.range$DF[1], max = phen.range$DF[2], step = (phen.range$DF[2]-phen.range$DF[1])/500, value = c(phen.range$DF[1],phen.range$DF[2]))
@@ -3606,6 +3904,7 @@ server <- function(input, output, session) {
   })
 
   output$perturb_plot <- renderUI({
+    if(0){
     input$plot_gen
     isolate(if( !is.null(ml.model.selected$ml.model)){
       if(input$plot_type == "2D"){
@@ -3614,6 +3913,27 @@ server <- function(input, output, session) {
         return(rgl::rglwidgetOutput("perturb_plot_3d",height = "450px", width = "450px"))
       }
     })
+    }
+
+    input$plot_gen
+    ##check if a point selected
+    if(!is.null(selected$pkey)){
+      ##progress indicator
+
+      withProgress(message = 'This may take a while...', value = NULL, {
+        isolate(if( !is.null(ml.model.selected$ml.model)){
+          #plot_counter$count <- 1
+          if(input$plot_type == "2D"){
+            return(plotOutput("perturb_plot_2d",height = "450px", width = "450px"))
+          } else if(input$plot_type == "3D"){
+            return(rgl::rglwidgetOutput("perturb_plot_3d",height = "450px", width = "450px"))
+          }
+        })
+      })
+    }else{
+
+    }
+
   })
 
   output$perturb_plot_2d <- renderPlot({
@@ -3622,7 +3942,8 @@ server <- function(input, output, session) {
       if(is.null(input$parameter_choice1) | is.null(input$parameter_choice2)  ){
         return()
       }else if((input$parameter_choice1 != input$parameter_choice2) & ((nrow(nearPoints(ggdata, input$tsne_click,  maxpoints = 1, xvar = "tSNE1", yvar = "tSNE2")) != 0) | !is.null(selected$pkey))){
-
+        ##progress indicator
+        withProgress(message = 'This may take a while...', value = NULL, {
 
 
         prm.combs.val.z$DF <- vec.plot.bc.mod( ml.model.selected$ml.model, ml.model.selected$ml.model.res, selected$point.perturbed,
@@ -3634,6 +3955,7 @@ server <- function(input, output, session) {
         names(prm.combs.val.z$prm.comb.selected.rescaled) <-  selected$point$parameter
         names(prm.combs.val.z$prm.comb.selected.original) <-  selected$point$parameter
         #print( selected$point$original )
+        })
       }
 
 
@@ -3648,6 +3970,8 @@ server <- function(input, output, session) {
       if(is.null(input$parameter_choice1) |is.null(input$parameter_choice2)  ){
         return()
       }else if((input$parameter_choice1 != input$parameter_choice2) & ((nrow(nearPoints(ggdata, input$tsne_click,  maxpoints = 1, xvar = "tSNE1", yvar = "tSNE2")) != 0) | !is.null(selected$pkey))){
+        ##progress indicator
+        withProgress(message = 'This may take a while...', value = NULL, {
         try(rgl.close(), silent = TRUE)
         prm.combs.val.z$DF <-  vec.plot.bc.mod( ml.model.selected$ml.model, ml.model.selected$ml.model.res,selected$point.perturbed,
                                                c(input$parameter_choice1, input$parameter_choice2),prm.ranges.z.selected$DF[,parameters$ml.model], grid.lines =input$num_grids_val, zoom = 1, zlim =  c(input$plot_range[1],input$plot_range[2]), gap = 0 , three.dim = T, posit.class = input$posit_class_exp,
@@ -3661,6 +3985,7 @@ server <- function(input, output, session) {
 
         scene1<- rgl::scene3d()
         rgl::rglwidget(scene1)
+        })
 
       }
     }})
@@ -3675,7 +4000,9 @@ server <- function(input, output, session) {
              column(4,textInput("pkey_digits_val", label = h6("Starting digit"))),
              #column(4,numericInput("num_grids_val", label = h6("Number of grids"),value = 30, min = 2, max = 100)),
              DT::dataTableOutput("prm_combs_val"),
-             downloadButton("save_prm_combs_val", "Save validation parameter combinations")
+             h5("Save validation parameter combinations"),
+             shinyFiles::shinySaveButton("save_prm_combs_val", "Save!", "Save as ...", filetype=list(text=".txt", csv=".csv"))
+             #downloadButton("save_prm_combs_val", "Save validation parameter combinations")
            ))
 
     }
@@ -3834,15 +4161,36 @@ server <- function(input, output, session) {
   })
 
 
-  output$save_prm_combs_val <- downloadHandler(
-    filename = function() {
-      paste0(selected$pkey, "_",input$parameter_choice1, "_", input$parameter_choice2,  ".txt")
-    },
-    content = function(file) {
-      write.table(prm.combs.val$DF, file, row.names = FALSE,quote =FALSE)
-    }
+  # output$save_prm_combs_val <- downloadHandler(
+  #   filename = function() {
+  #     paste0(selected$pkey, "_",input$parameter_choice1, "_", input$parameter_choice2,  ".txt")
+  #   },
+  #   content = function(file) {
+  #     write.table(prm.combs.val$DF, file, row.names = FALSE,quote =FALSE)
+  #   }
+  #
+  # )
 
-  )
+  observe({
+    volumes = c("root"= "~/", "cwd" = getwd())
+    shinyFiles::shinyFileSave(input, "save_prm_combs_val", roots = volumes)
+    #print(input$add_save)
+    file.info = shinyFiles::parseSavePath(volumes, input$save_prm_combs_val)
+
+
+    #file.info = shinyFiles::parseSavePath(c("roots"= "~/"), input$save_prm_combs)
+    #print(file.info)
+    if(nrow(file.info) > 0){
+      if(file.info$type == "text"){
+        isolate({
+          write.table(prm.combs.val$DF,file = as.character(file.info$datapath) ,quote = FALSE, col.names = TRUE, row.names = FALSE)})
+      }else if (file.info$type == "csv"){
+        isolate({
+          write.csv(prm.combs.val$DF,file = as.character(file.info$datapath) ,quote = FALSE, row.names = FALSE)})
+      }
+    }
+  })
+
 
 
   ##Generate validation plots
@@ -3870,13 +4218,24 @@ server <- function(input, output, session) {
     }
   })
 
+  shinyFiles::shinyFileChoose(input,'file_validation', session=session,roots= c("root"= "~/", "cwd" = getwd()), defaultRoot = 'root')
+
+  observeEvent(input$file_validation, {
+    #inFile <- parseFilePaths(roots=c(wd='.'), input$file_PPM)
+    inFile <- shinyFiles::parseFilePaths(roots=c("root"= "~/","cwd" = getwd()), input$file_validation)
+    print(inFile$datapath)
+
+    if(length(inFile$datapath) != 0){
+      prms.combs.val.sim$DF <- read.csv(as.character(inFile$datapath), header = T, stringsAsFactors = F)
+    }
+  })
 
   ## implement for retaining prm.val.z from generation.
   observeEvent(input$gen_val_plots,{
-    if(!is.null(input$file_validation)){
-      prms.combs.val.sim$DF <- read.table(input$file_validation$datapath, header = T, stringsAsFactors = F)
-    }
-
+    # if(!is.null(input$file_validation)){
+    #   prms.combs.val.sim$DF <- read.table(input$file_validation$datapath, header = T, stringsAsFactors = F)
+    # }
+    #
 
 
 
@@ -4018,23 +4377,28 @@ server <- function(input, output, session) {
     #   return(0)
     # }else{
     input$gen_val_plots
-    if(!is.null(prms.combs.val.sim$DF)){
+    ##progress indicator
+    withProgress(message = 'This may take a while....', value = NULL, {
       isolate({
-        if(input$plot_type_val == "2D"){
-          list(
-            column(4,plotOutput("val_plot_pred_2d", width = "400px")),
-            column(4,plotOutput("val_plot_sim_2d", width = "400px")),
-            column(4,plotOutput("val_plot_corr", width = "400px"))
-          )
-        }else if(input$plot_type_val == "3D"){
-          list(
-            column(4,rgl::rglwidgetOutput("val_plot_pred_3d", width = "400px")),
-            column(4,rgl::rglwidgetOutput("val_plot_sim_3d", width = "400px")),
-            column(4,plotOutput("val_plot_corr", width = "400px"))
-          )
+        if(!is.null(prms.combs.val.sim$DF)){
+
+          if(input$plot_type_val == "2D"){
+            list(
+              column(4,h4("Prediction"),plotOutput("val_plot_pred_2d", width = "400px")),
+              column(4,h4("Simuation"),plotOutput("val_plot_sim_2d", width = "400px")),
+              column(4,br(),br(),plotOutput("val_plot_corr", width = "400px"))
+            )
+          }else if(input$plot_type_val == "3D"){
+            list(
+              column(4,h4("Prediction"),rgl::rglwidgetOutput("val_plot_pred_3d", width = "400px")),
+              column(4,h4("Simuation"),rgl::rglwidgetOutput("val_plot_sim_3d", width = "400px")),
+              column(4,br(),br(),plotOutput("val_plot_corr", width = "400px"))
+            )
+          }
+
         }
       })
-    }
+    })
   })
 
 
@@ -4043,18 +4407,21 @@ server <- function(input, output, session) {
 
   output$val_plot_pred_2d <- renderPlot({
     input$gen_val_plots
-    print(prms.combs.val.sim$selected_prm_comb_z)
+
     #since rf models were trained without kYp, dYp, n, K
     isolate({if(!is.null( ml.model.selected$ml.model)){
+      print(prms.combs.val.sim$selected_prm_comb_z)
       if(0){
         vec.plot.bc.mod( ml.model.selected$ml.model, ml.model.selected$ml.model.res,prms.combs.val.sim$selected_prm_comb_z[1:numPrm$ml.model],
                         c(prms.combs.val.sim$perturbed_prm1, prms.combs.val.sim$perturbed_prm2),prm.ranges.z.selected$DF[,1:numPrm$ml.model], grid.lines =  prms.combs.val.sim$num_grids, zoom = 1, zlim = c(input$plot_range_val[1],input$plot_range_val[2]), gap = 0 , three.dim = F)
       }
 
       if(1){
-        image2D(matrix( prms.combs.val.sim$pred, nrow = prms.combs.val.sim$num_grids), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]), contour = T, zlim = c(input$plot_range_val[1],input$plot_range_val[2]),xlab = prms.combs.val.sim$perturbed_prm1, ylab =prms.combs.val.sim$perturbed_prm2)
-        points(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], pch =  19 )
-      }
+        withProgress(message = 'This may take a while....', value = NULL, {
+        plot3D::image2D(matrix( prms.combs.val.sim$pred, nrow = prms.combs.val.sim$num_grids), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]), contour = T, zlim = c(input$plot_range_val[1],input$plot_range_val[2]),xlab = prms.combs.val.sim$perturbed_prm1, ylab =prms.combs.val.sim$perturbed_prm2)
+        graphics::points(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], pch =  19 )
+        })
+        }
     }})
 
 
@@ -4063,8 +4430,8 @@ server <- function(input, output, session) {
   output$val_plot_sim_2d <- renderPlot({
     input$gen_val_plots
     isolate({if(!is.null( ml.model.selected$ml.model)){
-      image2D(matrix(prms.combs.val.sim$simulated, nrow =prms.combs.val.sim$num_grids), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]), contour = T, zlim = c(input$plot_range_val[1],input$plot_range_val[2]),xlab = prms.combs.val.sim$perturbed_prm1, ylab =prms.combs.val.sim$perturbed_prm2)
-      points(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], pch =  19 )
+      plot3D::image2D(matrix(prms.combs.val.sim$simulated, nrow =prms.combs.val.sim$num_grids), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]), contour = T, zlim = c(input$plot_range_val[1],input$plot_range_val[2]),xlab = prms.combs.val.sim$perturbed_prm1, ylab =prms.combs.val.sim$perturbed_prm2)
+      graphics::points(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], pch =  19 )
     }})
   })
 
@@ -4084,16 +4451,16 @@ server <- function(input, output, session) {
         color.gradient <- function(x, colors=c("blue", "green","yellow","red"), colsteps=100) {
           return( colorRampPalette(colors) (colsteps) [ findInterval(x, seq(input$plot_range_val[1],input$plot_range_val[2], length.out=colsteps)) ] )
         }
-        plot3d(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2],
+        rgl::plot3d(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2],
                z = prms.combs.val.sim$pred, zlim = c(input$plot_range_val[1],input$plot_range_val[2]), xlab = prms.combs.val.sim$perturbed_prm1, ylab =prms.combs.val.sim$perturbed_prm2, zlab = prms.combs.val.sim$phenotype)
-        plot3d(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], z =   prms.combs.val.sim$selected_prm_comb_z_pred, xlab = prms.combs.val.sim$perturbed_prm1, ylab = prms.combs.val.sim$perturbed_prm2,
+        rgl::plot3d(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], z =   prms.combs.val.sim$selected_prm_comb_z_pred, xlab = prms.combs.val.sim$perturbed_prm1, ylab = prms.combs.val.sim$perturbed_prm2,
                main = "Prediction", col = "red", size = 7, add = TRUE, zlim = c(input$plot_range_val[1],input$plot_range_val[2]))
-        surface3d(unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]),
+        rgl::surface3d(unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]),
                   z = prms.combs.val.sim$pred, col = color.gradient( prms.combs.val.sim$pred), size = 4, alpha = 0.4, zlim = c(input$plot_range_val[1],input$plot_range_val[2]))
 
       }
-      scene2<- scene3d()
-      rglwidget(scene2)
+      scene2<-  rgl::scene3d()
+      rgl::rglwidget(scene2)
 
     }})
 
@@ -4107,15 +4474,15 @@ server <- function(input, output, session) {
       color.gradient <- function(x, colors=c("blue", "green","yellow","red"), colsteps=100) {
         return( colorRampPalette(colors) (colsteps) [ findInterval(x, seq(input$plot_range_val[1],input$plot_range_val[2], length.out=colsteps)) ] )
       }
-      plot3d(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2],
+      rgl::plot3d(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2],
              z = prms.combs.val.sim$simulated, zlim =c(input$plot_range_val[1],input$plot_range_val[2]), xlab = prms.combs.val.sim$perturbed_prm1, ylab =prms.combs.val.sim$perturbed_prm2, zlab = prms.combs.val.sim$phenotype)
-      plot3d(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], z = prms.combs.val.sim$selected_prm_comb_z_simulated, xlab = prms.combs.val.sim$perturbed_prm1, ylab = prms.combs.val.sim$perturbed_prm2,
+      rgl::plot3d(prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm1], prms.combs.val.sim$selected_prm_comb_z[prms.combs.val.sim$perturbed_prm2], z = prms.combs.val.sim$selected_prm_comb_z_simulated, xlab = prms.combs.val.sim$perturbed_prm1, ylab = prms.combs.val.sim$perturbed_prm2,
              main = "Simulation", col = "red", size = 7, add = TRUE, zlim = c(input$plot_range_val[1],input$plot_range_val[2]))
-      surface3d(unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]),
+      rgl::surface3d(unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm1]), unique(prms.combs.val.sim$DF_z[,prms.combs.val.sim$perturbed_prm2]),
                 z = prms.combs.val.sim$simulated, col = color.gradient(prms.combs.val.sim$simulated), size = 4, alpha = 0.4,  zlim = c(input$plot_range_val[1],input$plot_range_val[2]))
 
-      scene3<- scene3d()
-      rglwidget(scene3)
+      scene3<-  rgl::scene3d()
+      rgl::rglwidget(scene3)
     }})
 
   })
@@ -4150,9 +4517,20 @@ server <- function(input, output, session) {
 
   myfun <- function(x) hclust(x, method = "ward.D")
 
+  ##progress indicator
+  withProgress(message = 'This may take a while...', value = NULL, {
   observeEvent(input$gen_hclust,{
     if(!is.null(input$tsne_brush)){
       brush.points$rtsne = brushedPoints(ggdata, input$tsne_brush, xvar = "tSNE1", yvar = "tSNE2")
+
+      if(nrow( brush.points$rtsne) > 30000){
+        showModal(modalDialog(
+          title = "Alert!",
+          paste0("You have selected too many points (", nrow( brush.points$rtsne),"), that may exceed the memory capacity of this computer to generate heatmaps."),
+          easyClose = TRUE
+        ))
+      }
+
       if(!is.null(ml.model.selected$ml.model)){
         brush.points$loc.imp = local.importance$DF[local.importance$DF$pkey %in% brush.points$rtsne$pkey,c("pkey", parameters$ml.model)]
         brush.points$loc.imp <- brush.points$loc.imp[order(brush.points$loc.imp$pkey),]
@@ -4196,6 +4574,7 @@ server <- function(input, output, session) {
       hclust$locImp.row.cut <- NULL
       hclust$locImp.row.cut.color <- NULL
     }
+  })
 
   })
 
@@ -4203,7 +4582,8 @@ server <- function(input, output, session) {
 
   output$hclust_prms <- renderPlot({
     if(!is.null(brush.points$prm.z)){
-
+       ##progress indicator
+       withProgress(message = 'This may take a while...', value = NULL, {
         temp.range = signif(range(as.numeric(as.matrix(brush.points$prm.z))),2 )
         colors <- c(seq(temp.range[1],temp.range[2],length=100))
         if(!is.null(input$hclust_prms_selected_pt)){
@@ -4216,12 +4596,12 @@ server <- function(input, output, session) {
             if(!input$hclust_prms_col_dendr){
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"),  RowSideColors=temp.hclust.prms.row.col )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"),  RowSideColors=temp.hclust.prms.row.col , labRow = FALSE )
               })
             }else{
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun,  trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"), RowSideColors=temp.hclust.prms.row.col )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations"), RowSideColors=temp.hclust.prms.row.col , labRow = FALSE )
               })
             }
 
@@ -4230,12 +4610,12 @@ server <- function(input, output, session) {
             if(!input$hclust_prms_col_dendr){
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") , labRow = FALSE )
               })
             }else{
               isolate({
                 #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun,  trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+                gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") , labRow = FALSE )
               })
             }
           }
@@ -4243,18 +4623,18 @@ server <- function(input, output, session) {
           if(!input$hclust_prms_col_dendr){
             isolate({
               #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-              gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+              gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") , labRow = FALSE )
             })
           }else{
             isolate({
               #heatmap.2(as.matrix(brush.points$prm.z), hclustfun = myfun,  trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
-              gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") )
+              gplots::heatmap.2(as.matrix(brush.points$prm.z),  Rowv = hclust$prms.row, Colv = hclust$prms.col, trace = "none",breaks = colors, col = colorRampPalette(c("blue", "white", "red"))(n = 99), main = paste0("Parameter combinations") , labRow = FALSE )
             })
           }
         }
 
 
-
+       })
     }
   })
 
@@ -4300,9 +4680,11 @@ server <- function(input, output, session) {
         hclust$locImp.row.cut.color <- NULL
       }
     }
+
   })
 
   output$hclust_local_varimp <- renderPlot({
+    if(0){
     if(!is.null(brush.points$loc.imp)){
       input$hclust_local_varimp_refresh
       input$hclust_locImp_col_dendr
@@ -4313,18 +4695,18 @@ server <- function(input, output, session) {
           if(!is.null(hclust$locImp.row.cut)){##with clusters
             if(!input$hclust_locImp_col_dendr){
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") ,  RowSideColors=hclust$locImp.row.cut.color)
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") ,  RowSideColors=hclust$locImp.row.cut.color, labRow = FALSE )
             }else{
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), RowSideColors=hclust$locImp.row.cut.color )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), RowSideColors=hclust$locImp.row.cut.color , labRow = FALSE )
             }
           }else{
             if(!input$hclust_locImp_col_dendr){
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") , labRow = FALSE )
             }else{
               #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
-              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), labRow = FALSE  )
             }
 
           }
@@ -4332,7 +4714,42 @@ server <- function(input, output, session) {
 
         }
       })
+    }}
+
+    if(!is.null(brush.points$loc.imp)){
+      input$hclust_local_varimp_refresh
+      input$hclust_locImp_col_dendr
+      ##progress indicator
+      withProgress(message = 'This may take a while...', value = NULL, {
+      isolate({
+        if(nrow(brush.points$loc.imp) != 0  & !is.null(input$hclust_locImp_color_scale)){
+
+          colors <- c(seq(-input$hclust_locImp_color_scale,input$hclust_locImp_color_scale,length=100))
+          if(!is.null(hclust$locImp.row.cut)){##with clusters
+            if(!input$hclust_locImp_col_dendr){
+              #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") ,  RowSideColors=hclust$locImp.row.cut.color, labRow = FALSE)
+            }else{
+              #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), RowSideColors=hclust$locImp.row.cut.color, labRow = FALSE )
+            }
+          }else{
+            if(!input$hclust_locImp_col_dendr){
+              #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, Rowv = TRUE, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots:: heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = FALSE,  dendrogram = "row", trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), labRow = FALSE )
+            }else{
+              #heatmap.2(as.matrix(brush.points$loc.imp), hclustfun = myfun, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance") )
+              gplots::heatmap.2(as.matrix(brush.points$loc.imp),  Rowv = hclust$locImp.row, Colv = hclust$locImp.col, trace = "none",breaks = colors, col = colorRampPalette(c("green", "black", "red"))(n = 99), main = paste0("Local variable importance"), labRow = FALSE )
+            }
+
+          }
+
+
+        }
+      })
+      })
     }
+
   })
 }
 

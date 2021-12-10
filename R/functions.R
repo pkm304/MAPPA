@@ -1,9 +1,11 @@
 
 ###Launch shiny
-launch_MAPPA <- function(x, ...)
-{
-  shiny::runApp(appDir = system.file("shiny_application", package = "MAPPA"),
-                ...)
+launch_MAPPA <- function(){
+
+  .GlobalEnv$.start.dir <- getwd()
+  on.exit(rm(list=c(.start.dir), envir=.GlobalEnv))
+
+  shiny::runApp(appDir = system.file("shiny_application", package = "MAPPA"))
 }
 
 
@@ -559,7 +561,16 @@ rocpr = function(rf.obj,X.test = NULL, ref = NULL, positive){
 
 colfunc<-grDevices::colorRampPalette(c("royalblue","springgreen","yellow","red"))
 
-
+AUC <- function(mat){
+  mat = mat[order(mat[,1]),]
+  N = nrow(mat) - 1
+  mat[is.na(mat)] = 1
+  sum = 0
+  for(i in 1:N){
+    sum = sum + (mat[i,2]+mat[i+1,2])*(mat[i+1,1]-mat[i,1])/2
+  }
+  return(sum)
+}
 
 ##server 359
 

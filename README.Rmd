@@ -345,3 +345,16 @@ saveRDS(PPM.obj,"examples/PPM_GC_reaction.Rds")
 #### (Back to MAPPA) Reload the PPM object and train machine learning (ML) models in a flexible manner.
 
 
+
+
+#### addtional sampling
+```{r}
+prm.combs <- prmset.list$prm.combs
+phens_delay_TFR$pkey <- as.character(phens_delay_TFR$pkey)
+
+prm.combs.sel <- prm.combs %>% filter(pkey %in% (phens_delay_TFR %>% filter(dur.B_gc >= 100 & dur.B_gc < 800) %>% select(pkey) %>% c() %>% unlist()))
+
+write.csv(prm.combs.sel, "examples/prmset.sel.csv", quote = F, row.names = F)
+	
+```
+
