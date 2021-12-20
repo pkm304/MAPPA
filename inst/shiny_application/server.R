@@ -1750,8 +1750,9 @@ server <- function(input, output, session) {
       temp.ml.model.res.path  <- paste0("ml.models/", ml.models.new$models[[input$new_ml_models_ml]]$name,".res.Rds")
 
       saveRDS(ml.models.new$models[[input$new_ml_models_ml]]$ml.model, file = temp.ml.model.path )
-      saveRDS(ml.models.new$models[[input$new_ml_models_ml]]$ml.model.res, file =temp.ml.model.res.path)
-
+      if(ml.models.new$models[[input$new_ml_models_ml]]$mode != "class"){
+        saveRDS(ml.models.new$models[[input$new_ml_models_ml]]$ml.model.res, file =temp.ml.model.res.path)
+      }
 
       add.ml.model(PPM$object) <- list(phenotype.name =  ml.models.new$models[[input$new_ml_models_ml]]$phenotype ,
                                               name =  ml.models.new$models[[input$new_ml_models_ml]]$name,
